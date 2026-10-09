@@ -19,7 +19,8 @@ stellar-threads-core/
 ├── contracts/                  # Soroban smart contracts (Rust)
 │   ├── designer_registry/      # Atelier & designer registration on Stellar
 │   ├── product_passport/       # Digital garment passport with SHA-256 integrity
-│   └── fashion_escrow/         # Escrow order lifecycle and token settlements
+│   ├── fashion_escrow/         # Escrow order lifecycle and token settlements
+│   └── production_financing/   # Campaign funding thresholds & repayment distribution
 ├── src/
 │   ├── contracts/              # Typed TypeScript contract clients
 │   ├── indexer/                # Soroban contract event indexer & SSE broadcaster
@@ -69,7 +70,7 @@ npm run typecheck
 
 ## Contract Build & Deployment
 
-To compile the optimized WASM binaries for all three contracts:
+To compile the optimized WASM binaries for all contracts:
 ```bash
 node scripts/build-contracts.cjs
 ```
@@ -116,6 +117,7 @@ We categorize all contributions with clear labels:
 - [x] Designer Registry contract with metadata reference updates.
 - [x] Product Passport Registry with SHA-256 cryptographic integrity hash.
 - [x] B2B Fashion Escrow contract with token transfer integration.
+- [x] Production Financing contract with threshold milestones and proportional repayments.
 - [x] Real-time event indexing service with cursor checkpointing and SSE streaming.
 - [ ] Multi-asset escrow supporting EURC and custom fashion reward tokens.
 - [ ] Batch passport minting for seasonal ready-to-wear collections.

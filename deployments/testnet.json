@@ -1,0 +1,35 @@
+{
+  "network": "testnet",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "rpcUrl": "https://soroban-testnet.stellar.org",
+  "deployerPublicKey": "GCCTT7IQVNIDYHAJXYGMUYGETJDYRVLCOMW2UGRWKVCUZ6I7CQY5ZWG4",
+  "deployedAt": "2026-10-09T21:48:17.589Z",
+  "contracts": {
+    "designer_registry": {
+      "name": "DesignerRegistry",
+      "address": "CDUF5C2CNF3NFMMUOGCO74D2NFKCYUK6VVILPGXM5RDC7CDCGD3GJEHR",
+      "wasmHash": "d6edfba79048b6197f1c3ca5d27f371fedcb042f89a49c3bb78c89856cecab83",
+      "uploadTxHash": "028ff1906ac272014d227745c9ffc060d214fe662467170c97b2285d5ba3ad45",
+      "deploymentTxHash": "0d40e15e1b25f4576abe7f62ac85391ecd3440d2e9a6003036316220ce1f49c9",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/contract/CDUF5C2CNF3NFMMUOGCO74D2NFKCYUK6VVILPGXM5RDC7CDCGD3GJEHR",
+      "seedTxHash": "dd6f2a601a486fe9c30acd45d1a955dfbbd0cbae40ebdc5850ee93ff223260f7"
+    },
+    "product_passport": {
+      "name": "ProductPassport",
+      "address": "CAJLI5PXVPQWOY4C2MCG7GII37IORAP4PL5AVX7GSOCUV6FH5FTW2E4U",
+      "wasmHash": "e94cef825c3b8ae3f2d29fa81939c3726d6796f2a35061e450f5c887c9241743",
+      "uploadTxHash": "98c594cad855fc7cf19a1a7f3381c1d8109ec91aac4660d122d926483f242de3",
+      "deploymentTxHash": "4f3def7ddf7b3332ef79e7d3afaa2aae9d3988e5594bb3745e6bb6aba4e7dfee",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/contract/CAJLI5PXVPQWOY4C2MCG7GII37IORAP4PL5AVX7GSOCUV6FH5FTW2E4U",
+      "seedTxHash": "0df649fd2cff498e5ddc7372df3c04c047153095e97d0297b9f01ebdc0ce48e4"
+    },
+    "fashion_escrow": {
+      "name": "FashionEscrow",
+      "address": "CBULSNLLBDACPNNNM4JB5NL2XB56QP6FVU7HHIOTNUXKUBSU4JHJGV5D",
+      "wasmHash": "33d1f2c5c3ff6b2e4f8e3fa0f3a4a82ea57882d585be0ae56c97ba66ef2ea8f5",
+      "uploadTxHash": "e0106fe1445cc8e5c7b67c9e8f5a0b331960a6ad6ff8e018dc9a5dc8a8f289f1",
+      "deploymentTxHash": "3140abdc4857088390d0dd7d421ed552aab84030ea0a9c4745490cc30786181a",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/contract/CBULSNLLBDACPNNNM4JB5NL2XB56QP6FVU7HHIOTNUXKUBSU4JHJGV5D"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+name: Core Protocol CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-checks:
+    name: Lint, Typecheck & Test Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Run Typecheck
+        run: npm run typecheck
+
+      - name: Run Backend Tests
+        run: npm test
+
+  contract-checks:
+    name: Soroban Contracts Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cargo Check
+        run: cargo check --manifest-path contracts/Cargo.toml

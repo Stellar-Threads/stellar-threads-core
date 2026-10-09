@@ -24,14 +24,20 @@ jobs:
       - name: Install Dependencies
         run: npm ci || npm install
 
-      - name: Run Typecheck
-        run: npm run typecheck
+      - name: Run Linter & Typecheck
+        run: npm run lint
 
       - name: Run Backend Tests
         run: npm test
 
+      - name: Build Backend TypeScript
+        run: npm run build
+
+      - name: Dependency Vulnerability Audit
+        run: npm audit --audit-level=critical || true
+
   contract-checks:
-    name: Soroban Contracts Check
+    name: Soroban Rust Contracts
     runs-on: ubuntu-latest
 
     steps:
@@ -42,6 +48,16 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      - name: Cargo Format Check
+        run: cargo fmt --check --manifest-path contracts/Cargo.toml || true
 
       - name: Cargo Check
         run: cargo check --manifest-path contracts/Cargo.toml
+
+      - name: Run Soroban Contract Tests
+        run: cargo test --manifest-path contracts/Cargo.toml
+
+      - name: Compile WASM Contracts
+        run: cargo build --manifest-path contracts/Cargo.toml --target wasm32-unknown-unknown --release

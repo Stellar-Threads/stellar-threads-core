@@ -6,7 +6,7 @@ description = "Soroban smart contract for sovereign fashion designer identity ve
 license = "Apache-2.0"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [dependencies]
 soroban-sdk = { workspace = true }

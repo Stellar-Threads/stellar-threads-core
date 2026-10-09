@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "fashion_escrow",
     "designer_registry",
+    "product_passport",
 ]
 
 [workspace.dependencies]

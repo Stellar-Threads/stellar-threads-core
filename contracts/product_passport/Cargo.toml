@@ -1,0 +1,15 @@
+[package]
+name = "stellar-threads-product-passport"
+version = "0.1.0"
+edition = "2021"
+description = "Soroban smart contract for fashion digital product passports and authenticity verification"
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }

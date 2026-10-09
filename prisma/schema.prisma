@@ -1,0 +1,128 @@
+// Stellar Threads Protocol — Database & Event Indexing Schema
+// Models fashion commerce, designer sovereign identity, digital garment passports, and on-chain escrow.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  SUSPENDED
+}
+
+enum GarmentStage {
+  CONCEPT
+  SAMPLING
+  IN_PRODUCTION
+  QUALITY_ASSURED
+  DISTRIBUTED
+  OWNED
+  RECYCLED
+}
+
+enum EscrowStatus {
+  DRAFT
+  FUNDED
+  MILESTONE_COMPLETED
+  RELEASED
+  DISPUTED
+  REFUNDED
+}
+
+model Designer {
+  id                 String             @id @default(uuid())
+  stellarAddress     String             @unique
+  brandName          String
+  legalEntity        String?
+  city               String
+  country            String
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  passports          ProductPassport[]
+  buyerEscrows       ProductionEscrow[] @relation("BrandEscrows")
+  makerEscrows       ProductionEscrow[] @relation("MakerEscrows")
+
+  @@index([stellarAddress])
+}
+
+model ProductPassport {
+  id                    String       @id @default(uuid())
+  rfidOrNfcTagId        String?      @unique
+  designerId            String
+  collectionName        String
+  garmentName           String
+  editionNumber         Int
+  totalBatchSize        Int
+  manufacturingAtelier  String
+  currentLifecycleStage GarmentStage @default(IN_PRODUCTION)
+  tokenContractId       String?
+  provenanceHash        String?
+  createdAt             DateTime     @default(now())
+
+  designer              Designer     @relation(fields: [designerId], references: [id])
+
+  @@index([designerId])
+  @@index([rfidOrNfcTagId])
+}
+
+model ProductionEscrow {
+  id                     String       @id @default(uuid())
+  orderReference         String       @unique
+  brandAddress           String
+  manufacturerAddress    String
+  totalAmountXlm         Decimal      @db.Decimal(18, 7)
+  depositedAmountXlm     Decimal      @db.Decimal(18, 7) @default(0)
+  status                 EscrowStatus @default(DRAFT)
+  sorobanContractAddress String?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  brand                  Designer     @relation("BrandEscrows", fields: [brandAddress], references: [stellarAddress])
+  manufacturer           Designer     @relation("MakerEscrows", fields: [manufacturerAddress], references: [stellarAddress])
+  milestones             Milestone[]
+
+  @@index([brandAddress])
+  @@index([manufacturerAddress])
+  @@index([orderReference])
+}
+
+model Milestone {
+  id                String           @id @default(uuid())
+  escrowId          String
+  index             Int
+  title             String
+  description       String
+  releasePercentage Float
+  isCompleted       Boolean          @default(false)
+  completedAt       DateTime?
+
+  escrow            ProductionEscrow @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+
+  @@unique([escrowId, index])
+}
+
+model PaymentAuditRecord {
+  id              String   @id @default(uuid())
+  transactionHash String   @unique
+  fromAddress     String
+  toAddress       String
+  amountXlm       Decimal  @db.Decimal(18, 7)
+  memo            String?
+  memoType        String?  @default("text")
+  ledgerIndex     Int
+  confirmedAt     DateTime @default(now())
+  network         String   @default("testnet")
+
+  @@index([fromAddress])
+  @@index([toAddress])
+  @@index([transactionHash])
+}

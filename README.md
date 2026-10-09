@@ -143,6 +143,8 @@ The background event indexer (`src/indexer/eventIndexer.ts`):
 | `/api/v1/passports` | GET | List digital product passports |
 | `/api/v1/passports/verify` | POST | Verify SHA-256 metadata hash match |
 | `/api/v1/escrow/orders` | GET | List B2B escrow orders and lifecycle states |
+| `/api/v1/financing/proposals` | GET | Query production financing campaigns and status |
+| `/api/v1/financing/proposals/:id` | GET | Lookup specific financing proposal and on-chain record |
 | `/api/v1/events` | GET | Query indexed Soroban contract events with pagination |
 | `/api/v1/events/stream` | GET | Server-Sent Events (SSE) stream for real-time frontend updates |
 | `/api/v1/indexer/status` | GET | Health, sync state, and latest ingested ledger |
@@ -176,6 +178,14 @@ npm run lint
 ```bash
 npm run dev
 ```
+
+---
+
+## Community & Governance
+
+- **Code of Conduct:** [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- **Contributing Guidelines:** [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Security Policy:** [SECURITY.md](SECURITY.md)
 
 ---
 

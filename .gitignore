@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# TypeScript Build Artifacts
+dist/
+*.tsbuildinfo
+
+# Environment & Secrets
+.env
+.env*.local
+!.env.example
+
+# Rust / Soroban Cargo
+contracts/target/
+target/
+Cargo.lock
+
+# Logs & System
+*.log
+npm-debug.log*
+yarn-debug.log*
+.DS_Store

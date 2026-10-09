@@ -5,6 +5,11 @@ import healthRouter from './routes/health';
 import networkRouter from './routes/network';
 import protocolRouter from './routes/protocol';
 import validationRouter from './routes/validation';
+import eventsRouter from './routes/events';
+import designersRouter from './routes/designers';
+import passportsRouter from './routes/passports';
+import escrowRouter from './routes/escrow';
+import indexerRouter from './routes/indexer';
 import { logger } from './utils/logger';
 
 export function createApp(): express.Application {
@@ -32,6 +37,11 @@ export function createApp(): express.Application {
   app.use('/api/v1/network', networkRouter);
   app.use('/api/v1/protocol', protocolRouter);
   app.use('/api/v1/validate', validationRouter);
+  app.use('/api/v1/events', eventsRouter);
+  app.use('/api/v1/designers', designersRouter);
+  app.use('/api/v1/passports', passportsRouter);
+  app.use('/api/v1/escrow', escrowRouter);
+  app.use('/api/v1/indexer', indexerRouter);
 
   // 404 handler
   app.use((_req: Request, res: Response) => {

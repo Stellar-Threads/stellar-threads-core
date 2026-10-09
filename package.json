@@ -9,6 +9,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "vitest run",
+    "test:contracts": "cargo test --manifest-path contracts/Cargo.toml",
+    "build:contracts": "node scripts/build-contracts.cjs",
+    "deploy:testnet": "node scripts/deploy-testnet.cjs",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit"
   },

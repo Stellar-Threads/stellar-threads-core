@@ -10,6 +10,7 @@ import designersRouter from './routes/designers';
 import passportsRouter from './routes/passports';
 import escrowRouter from './routes/escrow';
 import indexerRouter from './routes/indexer';
+import { financingRouter } from './routes/financing';
 import { logger } from './utils/logger';
 
 export function createApp(): express.Application {
@@ -41,6 +42,7 @@ export function createApp(): express.Application {
   app.use('/api/v1/designers', designersRouter);
   app.use('/api/v1/passports', passportsRouter);
   app.use('/api/v1/escrow', escrowRouter);
+  app.use('/api/v1/financing', financingRouter);
   app.use('/api/v1/indexer', indexerRouter);
 
   // 404 handler

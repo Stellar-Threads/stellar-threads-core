@@ -4,6 +4,7 @@ members = [
     "fashion_escrow",
     "designer_registry",
     "product_passport",
+    "production_financing",
 ]
 
 [workspace.dependencies]

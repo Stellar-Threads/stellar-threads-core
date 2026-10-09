@@ -5,7 +5,8 @@ const { execSync } = require('child_process');
 const contracts = [
   'designer_registry',
   'product_passport',
-  'fashion_escrow'
+  'fashion_escrow',
+  'production_financing'
 ];
 
 const contractsDir = path.resolve(__dirname, '..', 'contracts');

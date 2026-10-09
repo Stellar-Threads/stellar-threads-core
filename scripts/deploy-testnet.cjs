@@ -32,6 +32,11 @@ const CONTRACTS = [
     name: 'FashionEscrow',
     wasmFile: 'stellar_threads_fashion_escrow.wasm',
   },
+  {
+    key: 'production_financing',
+    name: 'ProductionFinancing',
+    wasmFile: 'stellar_threads_production_financing.wasm',
+  },
 ];
 
 async function sleep(ms) {
@@ -172,8 +177,20 @@ async function main() {
           .addOperation(
             Operation.invokeContractFunction({
               contract: contractAddress,
-              function: contractSpec.key === 'designer_registry' ? 'has_designer' : (contractSpec.key === 'product_passport' ? 'get_passport' : 'has_order'),
-              args: contractSpec.key === 'designer_registry' ? [new Address(deployer.publicKey()).toScVal()] : (contractSpec.key === 'product_passport' ? [nativeToScVal('TEST', { type: 'string' })] : [nativeToScVal(1n, { type: 'u64' })]),
+              function:
+                contractSpec.key === 'designer_registry'
+                  ? 'has_designer'
+                  : contractSpec.key === 'product_passport'
+                  ? 'get_passport'
+                  : contractSpec.key === 'fashion_escrow'
+                  ? 'has_order'
+                  : 'has_proposal',
+              args:
+                contractSpec.key === 'designer_registry'
+                  ? [new Address(deployer.publicKey()).toScVal()]
+                  : contractSpec.key === 'fashion_escrow'
+                  ? [nativeToScVal(1n, { type: 'u64' })]
+                  : [nativeToScVal('TEST', { type: 'string' })],
             })
           )
           .setTimeout(60)

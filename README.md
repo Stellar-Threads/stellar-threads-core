@@ -46,15 +46,22 @@ stellar-threads-core/
 
 ---
 
+- **Live Web Application (Netlify)**: [https://stellar-threads-app.netlify.app](https://stellar-threads-app.netlify.app)
+- **Target Network**: Stellar Testnet (`Test SDF Network ; September 2015`)
+- **Soroban RPC**: `https://soroban-testnet.stellar.org`
+
+---
+
 ## Deployed Soroban Smart Contracts (Stellar Testnet)
 
-All three contracts are actively deployed and verified on Stellar Testnet:
+All four smart contracts are actively deployed and verified on Stellar Testnet:
 
 | Contract | Address | Source Path | Explorer Link |
 |---|---|---|---|
 | **Designer Registry** | `CDUF5C2CNF3NFMMUOGCO74D2NFKCYUK6VVILPGXM5RDC7CDCGD3GJEHR` | `contracts/designer_registry/` | [Inspect on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDUF5C2CNF3NFMMUOGCO74D2NFKCYUK6VVILPGXM5RDC7CDCGD3GJEHR) |
-| **Product Passport Registry** | `CAJLI5PXVPQWOY4C2MCG7GII37IORAP4PL5AVX7GSOCUV6FH5FTW2E4U` | `contracts/product_passport/` | [Inspect on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CAJLI5PXVPQWOY4C2MCG7GII37IORAP4PL5AVX7GSOCUV6FH5FTW2E4U) |
+| **Product Passport Registry** | `CD23NAGPWADWWFRGMDUM4GUFGIB52U73L3F5QURQSACWOHXLEKKE3ZVL` | `contracts/product_passport/` | [Inspect on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CD23NAGPWADWWFRGMDUM4GUFGIB52U73L3F5QURQSACWOHXLEKKE3ZVL) |
 | **Fashion Escrow** | `CBULSNLLBDACPNNNM4JB5NL2XB56QP6FVU7HHIOTNUXKUBSU4JHJGV5D` | `contracts/fashion_escrow/` | [Inspect on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CBULSNLLBDACPNNNM4JB5NL2XB56QP6FVU7HHIOTNUXKUBSU4JHJGV5D) |
+| **Production Financing** | `CAIK2L6D272O6RZA23LRL3QSHLDVXNZXD6BKXCYNEL6R35IEG3YXES3M` | `contracts/production_financing/` | [Inspect on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CAIK2L6D272O6RZA23LRL3QSHLDVXNZXD6BKXCYNEL6R35IEG3YXES3M) |
 
 ### Deployment Transaction Hashes
 
@@ -65,11 +72,14 @@ All three contracts are actively deployed and verified on Stellar Testnet:
   - Seed Tx: [`dd6f2a601a486fe9c30acd45d1a955dfbbd0cbae40ebdc5850ee93ff223260f7`](https://stellar.expert/explorer/testnet/tx/dd6f2a601a486fe9c30acd45d1a955dfbbd0cbae40ebdc5850ee93ff223260f7)
 - **Product Passport Registry**:
   - Upload Tx: [`98c594cad855fc7cf19a1a7f3381c1d8109ec91aac4660d122d926483f242de3`](https://stellar.expert/explorer/testnet/tx/98c594cad855fc7cf19a1a7f3381c1d8109ec91aac4660d122d926483f242de3)
-  - Deploy Tx: [`4f3def7ddf7b3332ef79e7d3afaa2aae9d3988e5594bb3745e6bb6aba4e7dfee`](https://stellar.expert/explorer/testnet/tx/4f3def7ddf7b3332ef79e7d3afaa2aae9d3988e5594bb3745e6bb6aba4e7dfee)
-  - Seed Tx: [`0df649fd2cff498e5ddc7372df3c04c047153095e97d0297b9f01ebdc0ce48e4`](https://stellar.expert/explorer/testnet/tx/0df649fd2cff498e5ddc7372df3c04c047153095e97d0297b9f01ebdc0ce48e4)
+  - Deploy Tx: [`5727c98fe31fc411d5d34751562529d6d01eab72911844b8bac3fc949a67c490`](https://stellar.expert/explorer/testnet/tx/5727c98fe31fc411d5d34751562529d6d01eab72911844b8bac3fc949a67c490)
+  - Seed Tx: [`a1e26e9e5db699228f18f63dcf2fc489ce057292d3cf6d9dd517183675a015a5`](https://stellar.expert/explorer/testnet/tx/a1e26e9e5db699228f18f63dcf2fc489ce057292d3cf6d9dd517183675a015a5)
 - **Fashion Escrow**:
   - Upload Tx: [`e0106fe1445cc8e5c7b67c9e8f5a0b331960a6ad6ff8e018dc9a5dc8a8f289f1`](https://stellar.expert/explorer/testnet/tx/e0106fe1445cc8e5c7b67c9e8f5a0b331960a6ad6ff8e018dc9a5dc8a8f289f1)
   - Deploy Tx: [`3140abdc4857088390d0dd7d421ed552aab84030ea0a9c4745490cc30786181a`](https://stellar.expert/explorer/testnet/tx/3140abdc4857088390d0dd7d421ed552aab84030ea0a9c4745490cc30786181a)
+- **Production Financing**:
+  - Upload Tx: [`539526007b2ba79f2e086e96541f23f8a2b7924ed3fe9e1d2ef4c7ceaba8c4d5`](https://stellar.expert/explorer/testnet/tx/539526007b2ba79f2e086e96541f23f8a2b7924ed3fe9e1d2ef4c7ceaba8c4d5)
+  - Deploy Tx: [`31b9591468c37af24b16c5bc3280c95e2844db4e9a45ec8db18c543988c02263`](https://stellar.expert/explorer/testnet/tx/31b9591468c37af24b16c5bc3280c95e2844db4e9a45ec8db18c543988c02263)
 
 ---
 

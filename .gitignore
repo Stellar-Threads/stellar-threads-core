@@ -18,7 +18,6 @@ data/
 # Rust / Soroban Cargo
 contracts/target/
 target/
-Cargo.lock
 test_snapshots/
 **/test_snapshots/
 

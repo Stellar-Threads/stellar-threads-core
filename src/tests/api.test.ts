@@ -74,4 +74,19 @@ describe('Stellar Threads Core API Endpoints', () => {
     expect(res.body.data.isValid).toBe(false);
     expect(res.body.data.errors.some((e: string) => e.includes('identical'))).toBe(true);
   });
+  it('GET /health/rpc should return Soroban RPC health status with latencyMs', async () => {
+    const res = await request(app).get('/health/rpc');
+    expect([200, 503]).toContain(res.status);
+    expect(res.body.data).toHaveProperty('network', 'testnet');
+    expect(res.body.data).toHaveProperty('latencyMs');
+    expect(typeof res.body.data.latencyMs).toBe('number');
+    expect(res.body.data).toHaveProperty('connected');
+  });
+
+  it('GET /health should return overall service health and uptime', async () => {
+    const res = await request(app).get('/health');
+    expect([200, 503]).toContain(res.status);
+    expect(res.body.data.service).toBe('stellar-threads-core');
+    expect(res.body.data.uptimeSeconds).toBeGreaterThanOrEqual(0);
+  });
 });

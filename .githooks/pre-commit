@@ -1,0 +1,11 @@
+#!/bin/sh
+# Git pre-commit hook: Verify code quality before recording commit
+echo "Running Stellar Threads pre-commit quality checks..."
+
+npm test -- --run || {
+  echo "❌ Vitest test suites failed! Aborting commit."
+  exit 1
+}
+
+echo "✅ Pre-commit verification passed."
+exit 0

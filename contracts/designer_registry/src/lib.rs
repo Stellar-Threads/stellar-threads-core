@@ -39,6 +39,8 @@ pub struct DesignerRecord {
     pub registered_at: u64,
     pub is_verified: bool,
     pub tier: DesignerTier,
+    pub sustainability_score: u32,
+    pub cert_hash: String,
 }
 
 const TOPIC_DESIGNER: Symbol = symbol_short!("designer");
@@ -80,6 +82,8 @@ impl DesignerRegistryContract {
             registered_at: now,
             is_verified: true,
             tier: DesignerTier::Emerging,
+            sustainability_score: 50,
+            cert_hash: String::from_str(&env, "UNVERIFIED"),
         };
 
         env.storage().persistent().set(&designer, &record);
@@ -149,6 +153,35 @@ impl DesignerRegistryContract {
         env.events().publish(
             (TOPIC_DESIGNER, symbol_short!("tier")),
             (designer, new_tier as u32),
+        );
+
+        Ok(())
+    }
+
+    /// Attest ESG sustainability score and certification hash
+    pub fn update_sustainability(
+        env: Env,
+        designer: Address,
+        score: u32,
+        cert_hash: String,
+    ) -> Result<(), RegistryError> {
+        if score > 100 {
+            return Err(RegistryError::InvalidSustainabilityScore);
+        }
+
+        let mut record: DesignerRecord = env
+            .storage()
+            .persistent()
+            .get(&designer)
+            .ok_or(RegistryError::NotFound)?;
+
+        record.sustainability_score = score;
+        record.cert_hash = cert_hash.clone();
+        env.storage().persistent().set(&designer, &record);
+
+        env.events().publish(
+            (TOPIC_DESIGNER, symbol_short!("esg")),
+            (designer, score, cert_hash),
         );
 
         Ok(())

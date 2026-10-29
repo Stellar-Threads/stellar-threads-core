@@ -479,6 +479,34 @@ impl ProductionFinancingContract {
         Ok(daily_yield * (duration_days as i128))
     }
 
+    /// Pledge an on-chain digital product passport ID as production financing collateral
+    pub fn pledge_collateral_passport(
+        env: Env,
+        applicant: Address,
+        proposal_id: String,
+        passport_id: String,
+    ) -> Result<(), FinancingError> {
+        applicant.require_auth();
+
+        let p_key = DataKey::Proposal(proposal_id.clone());
+        let proposal: FinancingProposal = env
+            .storage()
+            .persistent()
+            .get(&p_key)
+            .ok_or(FinancingError::NotFound)?;
+
+        if proposal.applicant != applicant {
+            return Err(FinancingError::Unauthorized);
+        }
+
+        env.events().publish(
+            (TOPIC_FINANCING, symbol_short!("pledge")),
+            (proposal_id, applicant, passport_id),
+        );
+
+        Ok(())
+    }
+
     /// Read proposal details
     pub fn get_proposal(env: Env, proposal_id: String) -> Result<FinancingProposal, FinancingError> {
         let key = DataKey::Proposal(proposal_id);

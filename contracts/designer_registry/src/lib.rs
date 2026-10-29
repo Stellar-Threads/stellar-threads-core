@@ -13,6 +13,10 @@ pub enum RegistryError {
     InvalidBrandName = 4,
     InvalidLocation = 5,
     InvalidMetadataUri = 6,
+    ContractPaused = 7,
+    InvalidSustainabilityScore = 8,
+    TierNotFound = 9,
+    UnauthorizedAuditor = 10,
 }
 
 #[contracttype]

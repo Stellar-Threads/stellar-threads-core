@@ -442,6 +442,12 @@ impl FashionEscrowContract {
         env.storage().instance().get(&KEY_PAUSED).unwrap_or(false)
     }
 
+    /// Verify SEP-41 / SAC token allowance before executing escrow operations
+    pub fn check_token_balance(env: Env, token_address: Address, account: Address) -> i128 {
+        let token_client = token::Client::new(&env, &token_address);
+        token_client.balance(&account)
+    }
+
     /// Read an escrow order by ID
     pub fn get_order(env: Env, order_id: u64) -> Result<EscrowOrder, EscrowError> {
         env.storage()

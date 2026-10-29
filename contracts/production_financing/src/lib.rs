@@ -466,6 +466,19 @@ impl ProductionFinancingContract {
         Ok(contribution)
     }
 
+    /// Calculate annualized factoring yield in Stroops based on duration and basis points
+    pub fn calculate_factoring_yield(
+        principal: i128,
+        annual_yield_bps: u32,
+        duration_days: u32,
+    ) -> Result<i128, FinancingError> {
+        if principal <= 0 || annual_yield_bps > 10_000 {
+            return Err(FinancingError::InvalidAmount);
+        }
+        let daily_yield = (principal * (annual_yield_bps as i128)) / (10_000 * 365);
+        Ok(daily_yield * (duration_days as i128))
+    }
+
     /// Read proposal details
     pub fn get_proposal(env: Env, proposal_id: String) -> Result<FinancingProposal, FinancingError> {
         let key = DataKey::Proposal(proposal_id);

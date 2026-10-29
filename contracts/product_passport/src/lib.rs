@@ -33,6 +33,8 @@ pub struct ProductPassportRecord {
     pub total_edition: u32,
     pub status: u32, // 1: Active, 2: Transferred, 3: Retired
     pub created_at: u64,
+    pub origin_country: String,
+    pub material_composition: String,
 }
 
 const TOPIC_PASSPORT: Symbol = symbol_short!("passport");
@@ -90,6 +92,8 @@ impl ProductPassportContract {
             total_edition,
             status: 1, // Active
             created_at: now,
+            origin_country: String::from_str(&env, "FR"),
+            material_composition: String::from_str(&env, "100% Organic Silk"),
         };
 
         env.storage().persistent().set(&product_id, &record);
@@ -100,6 +104,29 @@ impl ProductPassportContract {
             (TOPIC_PASSPORT, EVT_CREATED),
             (product_id, creator, integrity_hash),
         );
+
+        Ok(())
+    }
+
+    /// Update provenance materials and origin for a garment passport
+    pub fn update_provenance(
+        env: Env,
+        product_id: String,
+        origin_country: String,
+        material_composition: String,
+    ) -> Result<(), PassportError> {
+        let mut record: ProductPassportRecord = env
+            .storage()
+            .persistent()
+            .get(&product_id)
+            .ok_or(PassportError::NotFound)?;
+
+        record.creator.require_auth();
+
+        record.origin_country = origin_country;
+        record.material_composition = material_composition;
+        env.storage().persistent().set(&product_id, &record);
+        env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         Ok(())
     }

@@ -40,6 +40,10 @@ export class ProductionFinancingClient {
     return this.contractAddress;
   }
 
+  public getContractId(): string {
+    return this.contractAddress;
+  }
+
   public async getProposal(proposalId: string): Promise<FinancingProposal | null> {
     const tx = new TransactionBuilder(
       {

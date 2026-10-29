@@ -15,6 +15,14 @@ pub enum EscrowError {
     InvalidState = 5,
     SameBuyerSeller = 6,
     InvalidOrderRef = 7,
+    ContractPaused = 8,
+    DisputeWindowExpired = 9,
+    InvalidMilestone = 10,
+    InspectionFailed = 11,
+    InvalidBasisPoints = 12,
+    BelowMinimumEscrow = 13,
+    DisputeActive = 14,
+    ArbitrationRequired = 15,
 }
 
 #[contracttype]

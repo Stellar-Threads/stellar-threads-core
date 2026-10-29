@@ -18,6 +18,8 @@ export interface HealthData {
   uptimeSeconds: number;
   environment: string;
   stellar: NetworkHealthStatus;
+  protocol22Ready?: boolean;
+  storageStatus?: string;
 }
 
 export interface ValidateAddressRequest {

@@ -417,6 +417,55 @@ impl ProductionFinancingContract {
         Ok((principal_amount, yield_amount))
     }
 
+    /// Claim refund for unfulfilled campaign expired past deadline
+    pub fn claim_expired_campaign_refund(
+        env: Env,
+        contributor: Address,
+        proposal_id: String,
+    ) -> Result<i128, FinancingError> {
+        contributor.require_auth();
+
+        let p_key = DataKey::Proposal(proposal_id.clone());
+        let mut proposal: FinancingProposal = env
+            .storage()
+            .persistent()
+            .get(&p_key)
+            .ok_or(FinancingError::NotFound)?;
+
+        if env.ledger().timestamp() <= proposal.deadline {
+            return Err(FinancingError::CampaignNotActive);
+        }
+
+        if proposal.current_funded >= proposal.min_threshold {
+            return Err(FinancingError::CampaignSuccessful);
+        }
+
+        let c_key = DataKey::Contribution(proposal_id.clone(), contributor.clone());
+        let contribution: i128 = env
+            .storage()
+            .persistent()
+            .get(&c_key)
+            .ok_or(FinancingError::NothingToClaim)?;
+
+        if contribution <= 0 {
+            return Err(FinancingError::NothingToClaim);
+        }
+
+        let token_client = token::Client::new(&env, &proposal.token);
+        token_client.transfer(&env.current_contract_address(), &contributor, &contribution);
+
+        env.storage().persistent().remove(&c_key);
+        proposal.status = ProposalStatus::ExpiredRefund;
+        env.storage().persistent().set(&p_key, &proposal);
+
+        env.events().publish(
+            (TOPIC_FINANCING, EVT_REFUNDED),
+            (proposal_id, contributor, contribution),
+        );
+
+        Ok(contribution)
+    }
+
     /// Read proposal details
     pub fn get_proposal(env: Env, proposal_id: String) -> Result<FinancingProposal, FinancingError> {
         let key = DataKey::Proposal(proposal_id);

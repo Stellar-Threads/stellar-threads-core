@@ -1,0 +1,89 @@
+{
+  "info": {
+    "name": "Stellar Threads Core API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health & Observability",
+      "item": [
+        {
+          "name": "Service Health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        },
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/metrics"
+          }
+        },
+        {
+          "name": "Protocol Overview",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/analytics/overview"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Financing & Escrow",
+      "item": [
+        {
+          "name": "Calculate Factoring ROI",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/financing/calculate-roi",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"principalStroops\": \"500000000\",\n  \"yieldBps\": 850,\n  \"durationDays\": 180\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Submit Dispute",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/escrow/orders/1/dispute",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Defective stitching on batch #4\",\n  \"requestedRefundBps\": 5000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Digital Passports",
+      "item": [
+        {
+          "name": "Lookup Passport QR",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/passports/qr/PROD-1001"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api/v1"
+    }
+  ]
+}

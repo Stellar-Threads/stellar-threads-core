@@ -143,6 +143,25 @@ impl ProductPassportContract {
         Ok(record.royalty_bps)
     }
 
+    /// Verify cryptographic physical twin authenticity using physical chip hash digest
+    pub fn verify_physical_twin(
+        env: Env,
+        product_id: String,
+        chip_hash: String,
+    ) -> Result<bool, PassportError> {
+        let record: ProductPassportRecord = env
+            .storage()
+            .persistent()
+            .get(&product_id)
+            .ok_or(PassportError::NotFound)?;
+
+        if record.status == 3 {
+            return Err(PassportError::PassportRetired);
+        }
+
+        Ok(record.integrity_hash == chip_hash)
+    }
+
     /// Read digital product passport details
     pub fn get_passport(
         env: Env,

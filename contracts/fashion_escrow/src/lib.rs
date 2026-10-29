@@ -86,6 +86,8 @@ const EVT_CANCELLED: Symbol = symbol_short!("cancel");
 /// Protocol 22 storage rent TTL constants (~6 months in ledgers)
 const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
 const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
+const KEY_PAUSED: Symbol = symbol_short!("paused");
+const KEY_ADMIN: Symbol = symbol_short!("admin");
 
 #[contract]
 pub struct FashionEscrowContract;
@@ -400,6 +402,39 @@ impl FashionEscrowContract {
         );
 
         Ok(())
+    }
+
+    /// Initialize contract admin
+    pub fn initialize_admin(env: Env, admin: Address) -> Result<(), EscrowError> {
+        if env.storage().instance().has(&KEY_ADMIN) {
+            return Err(EscrowError::AlreadyExists);
+        }
+        env.storage().instance().set(&KEY_ADMIN, &admin);
+        env.storage().instance().set(&KEY_PAUSED, &false);
+        Ok(())
+    }
+
+    /// Emergency pause killswitch
+    pub fn set_paused(env: Env, admin: Address, paused: bool) -> Result<(), EscrowError> {
+        admin.require_auth();
+        let stored_admin: Address = env
+            .storage()
+            .instance()
+            .get(&KEY_ADMIN)
+            .ok_or(EscrowError::Unauthorized)?;
+
+        if admin != stored_admin {
+            return Err(EscrowError::Unauthorized);
+        }
+
+        env.storage().instance().set(&KEY_PAUSED, &paused);
+        env.events().publish((TOPIC_ESCROW, symbol_short!("paused")), paused);
+        Ok(())
+    }
+
+    /// Query pause status
+    pub fn is_paused(env: Env) -> bool {
+        env.storage().instance().get(&KEY_PAUSED).unwrap_or(false)
     }
 
     /// Read an escrow order by ID

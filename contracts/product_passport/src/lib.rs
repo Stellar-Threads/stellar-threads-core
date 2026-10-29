@@ -206,7 +206,7 @@ impl ProductPassportContract {
     ) -> Result<(), PassportError> {
         auditor.require_auth();
 
-        let record: ProductPassportRecord = env
+        let _record: ProductPassportRecord = env
             .storage()
             .persistent()
             .get(&product_id)

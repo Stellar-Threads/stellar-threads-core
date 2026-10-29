@@ -477,8 +477,8 @@ impl ProductionFinancingContract {
         if principal <= 0 || annual_yield_bps > 10_000 {
             return Err(FinancingError::InvalidAmount);
         }
-        let daily_yield = (principal * (annual_yield_bps as i128)) / (10_000 * 365);
-        Ok(daily_yield * (duration_days as i128))
+        let total_yield = (principal * (annual_yield_bps as i128) * (duration_days as i128)) / (10_000 * 365);
+        Ok(total_yield)
     }
 
     /// Pledge an on-chain digital product passport ID as production financing collateral
@@ -871,7 +871,7 @@ mod tests {
             &100_000_000_0000000,
             &50_000_000_0000000,
             &2_000,
-            &11_000_0000000,
+            &110_000_000_0000000,
             &purpose,
             &meta_uri,
         );
@@ -884,10 +884,19 @@ mod tests {
             &100_000_000_0000000,
             &50_000_000_0000000,
             &2_000,
-            &11_000_0000000,
+            &110_000_000_0000000,
             &purpose,
             &meta_uri,
         );
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_waterfall_and_factoring_yield() {
+        let (p, y) = ProductionFinancingContract::calculate_repayment_split(100_000_003i128, 8_000, 2_000).unwrap();
+        assert_eq!(p + y, 100_000_003i128); // Invariant holds!
+
+        let yield_val = ProductionFinancingContract::calculate_factoring_yield(100_000_000i128, 1_000, 365).unwrap();
+        assert_eq!(yield_val, 10_000_000i128); // 10% APY
     }
 }

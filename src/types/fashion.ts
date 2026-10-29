@@ -97,3 +97,22 @@ export interface PaymentAuditRecord {
   confirmedAt: string;
   network: string;
 }
+
+export type GarmentCircularState = 'Active' | 'Transferred' | 'Retired' | 'Recycled' | 'Upcycled';
+
+export interface GarmentProvenanceChain {
+  originCountry: string;
+  spinningMill?: string;
+  dyeHouse?: string;
+  materialComposition: string;
+  carbonScoreKg: number;
+  certHash: string;
+  isOrganicGots: boolean;
+}
+
+export interface EscrowDisputePayload {
+  orderId: number;
+  reason: string;
+  evidenceUri?: string;
+  requestedRefundBps: number;
+}

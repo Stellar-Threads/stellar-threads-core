@@ -271,6 +271,18 @@ impl FashionEscrowContract {
         Ok(())
     }
 
+    /// Calculate basis points allocation with strict 10,000 BPS boundary checks
+    pub fn calculate_bps(amount: i128, bps: u32) -> Result<i128, EscrowError> {
+        if bps > 10_000 {
+            return Err(EscrowError::InvalidBasisPoints);
+        }
+        if amount <= 0 {
+            return Err(EscrowError::InvalidAmount);
+        }
+        let bps_i128 = bps as i128;
+        Ok((amount * bps_i128) / 10_000)
+    }
+
     /// Read an escrow order by ID
     pub fn get_order(env: Env, order_id: u64) -> Result<EscrowOrder, EscrowError> {
         env.storage()

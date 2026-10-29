@@ -142,4 +142,18 @@ router.post('/prepare-create', async (req: Request, res: Response) => {
   }
 });
 
+
+router.get('/qr/:productId', (req: Request, res: Response) => {
+  const { productId } = req.params;
+  res.json({
+    success: true,
+    data: {
+      productId,
+      qrVerificationUrl: `https://stellar-threads.netlify.app/passports/${productId}`,
+      nfcScanProtocol: 'NDEF-URI-V1',
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
 export default router;

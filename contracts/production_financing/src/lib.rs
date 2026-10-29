@@ -617,6 +617,18 @@ impl ProductionFinancingContract {
         Ok(())
     }
 
+    /// Calculate default penalty interest if repayment grace period expires (e.g. 500 bps = 5%)
+    pub fn calculate_default_penalty(
+        principal: i128,
+        penalty_bps: u32,
+    ) -> Result<i128, FinancingError> {
+        if penalty_bps > 2_000 {
+            return Err(FinancingError::InvalidAmount);
+        }
+        let penalty = (principal * (penalty_bps as i128)) / 10_000;
+        Ok(penalty)
+    }
+
     /// Read proposal details
     pub fn get_proposal(env: Env, proposal_id: String) -> Result<FinancingProposal, FinancingError> {
         let key = DataKey::Proposal(proposal_id);

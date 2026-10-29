@@ -197,6 +197,31 @@ impl ProductPassportContract {
         Ok(())
     }
 
+    /// Co-sign passport authentication with third-party auditor signature
+    pub fn co_sign_passport(
+        env: Env,
+        product_id: String,
+        auditor: Address,
+        audit_ref: String,
+    ) -> Result<(), PassportError> {
+        auditor.require_auth();
+
+        let record: ProductPassportRecord = env
+            .storage()
+            .persistent()
+            .get(&product_id)
+            .ok_or(PassportError::NotFound)?;
+
+        env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+
+        env.events().publish(
+            (TOPIC_PASSPORT, symbol_short!("cosign")),
+            (product_id, auditor, audit_ref),
+        );
+
+        Ok(())
+    }
+
     /// Read digital product passport details
     pub fn get_passport(
         env: Env,

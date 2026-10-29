@@ -1,0 +1,22 @@
+# cargo-deny configuration for Soroban Protocol 22 Smart Contracts
+[advisories]
+vulnerability = "deny"
+unmaintained = "warn"
+yanked = "deny"
+
+[licenses]
+unlicensed = "deny"
+allow = [
+  "Apache-2.0",
+  "MIT",
+  "BSD-3-Clause",
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

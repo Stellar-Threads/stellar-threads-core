@@ -182,4 +182,18 @@ export class ProductPassportClient {
     const prepared = await this.server.prepareTransaction(tx);
     return prepared.toXDR();
   }
+
+  public async verifyPhysicalTwin(productId: string, chipHash: string): Promise<boolean> {
+    try {
+      const passport = await this.getPassport(productId);
+      return passport.integrity_hash === chipHash;
+    } catch {
+      return false;
+    }
+  }
+
+  public getSecondaryRoyaltyBps(): number {
+    return 500; // 5.00% default designer royalty
+  }
+
 }

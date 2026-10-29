@@ -186,6 +186,7 @@ export class ProductPassportClient {
   public async verifyPhysicalTwin(productId: string, chipHash: string): Promise<boolean> {
     try {
       const passport = await this.getPassport(productId);
+      if (!passport) return false;
       return passport.integrity_hash === chipHash;
     } catch {
       return false;

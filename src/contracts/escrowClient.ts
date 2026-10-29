@@ -219,7 +219,8 @@ export class FashionEscrowClient {
   public async getOrderSettledStatus(orderId: number): Promise<boolean> {
     try {
       const order = await this.getOrder(orderId);
-      return order.state === 'Released' || order.state === 'Refunded' || order.state === 'Cancelled';
+      if (!order) return false;
+      return order.state === 2 || order.state === 3 || order.state === 4;
     } catch {
       return false;
     }

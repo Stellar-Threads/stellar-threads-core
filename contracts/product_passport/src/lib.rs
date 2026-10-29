@@ -40,6 +40,9 @@ const EVT_CREATED: Symbol = symbol_short!("created");
 const EVT_TRANSFER: Symbol = symbol_short!("transf");
 const EVT_STATUS: Symbol = symbol_short!("status");
 
+const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
+const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
+
 #[contract]
 pub struct ProductPassportContract;
 
@@ -90,6 +93,7 @@ impl ProductPassportContract {
         };
 
         env.storage().persistent().set(&product_id, &record);
+        env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         // Emit passport creation event: topic: (passport, created), data: (product_id, creator, integrity_hash)
         env.events().publish(
@@ -149,6 +153,7 @@ impl ProductPassportContract {
         record.status = 2; // Transferred
 
         env.storage().persistent().set(&product_id, &record);
+        env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         // Emit transfer event
         env.events().publish(

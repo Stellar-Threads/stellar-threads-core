@@ -19,6 +19,16 @@ pub enum RegistryError {
     UnauthorizedAuditor = 10,
 }
 
+/// Official atelier prestige and craftsmanship verification tier
+#[contracttype]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(u32)]
+pub enum DesignerTier {
+    Emerging = 1,
+    VerifiedAtelier = 2,
+    HauteCouture = 3,
+}
+
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DesignerRecord {
@@ -28,6 +38,7 @@ pub struct DesignerRecord {
     pub metadata_uri: String,
     pub registered_at: u64,
     pub is_verified: bool,
+    pub tier: DesignerTier,
 }
 
 const TOPIC_DESIGNER: Symbol = symbol_short!("designer");
@@ -68,6 +79,7 @@ impl DesignerRegistryContract {
             metadata_uri: metadata_uri.clone(),
             registered_at: now,
             is_verified: true,
+            tier: DesignerTier::Emerging,
         };
 
         env.storage().persistent().set(&designer, &record);
@@ -114,6 +126,29 @@ impl DesignerRegistryContract {
         env.events().publish(
             (TOPIC_DESIGNER, EVT_UPDATED),
             (designer, brand_name, metadata_uri),
+        );
+
+        Ok(())
+    }
+
+    /// Upgrade designer atelier tier classification
+    pub fn update_tier(
+        env: Env,
+        designer: Address,
+        new_tier: DesignerTier,
+    ) -> Result<(), RegistryError> {
+        let mut record: DesignerRecord = env
+            .storage()
+            .persistent()
+            .get(&designer)
+            .ok_or(RegistryError::NotFound)?;
+
+        record.tier = new_tier;
+        env.storage().persistent().set(&designer, &record);
+
+        env.events().publish(
+            (TOPIC_DESIGNER, symbol_short!("tier")),
+            (designer, new_tier as u32),
         );
 
         Ok(())

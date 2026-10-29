@@ -542,6 +542,42 @@ impl ProductionFinancingContract {
         env.storage().instance().get(&KEY_PAUSED).unwrap_or(false)
     }
 
+    /// Disburse capital in milestone tranches based on production progress basis points
+    pub fn disburse_tranche(
+        env: Env,
+        caller: Address,
+        proposal_id: String,
+        tranche_bps: u32,
+    ) -> Result<i128, FinancingError> {
+        caller.require_auth();
+
+        if tranche_bps > 10_000 || tranche_bps == 0 {
+            return Err(FinancingError::InvalidAmount);
+        }
+
+        let p_key = DataKey::Proposal(proposal_id.clone());
+        let proposal: FinancingProposal = env
+            .storage()
+            .persistent()
+            .get(&p_key)
+            .ok_or(FinancingError::NotFound)?;
+
+        if caller != proposal.applicant {
+            return Err(FinancingError::Unauthorized);
+        }
+
+        let tranche_amount = (proposal.current_funded * (tranche_bps as i128)) / 10_000;
+        let token_client = token::Client::new(&env, &proposal.token);
+        token_client.transfer(&env.current_contract_address(), &proposal.applicant, &tranche_amount);
+
+        env.events().publish(
+            (TOPIC_FINANCING, symbol_short!("tranche")),
+            (proposal_id, tranche_amount, tranche_bps),
+        );
+
+        Ok(tranche_amount)
+    }
+
     /// Read proposal details
     pub fn get_proposal(env: Env, proposal_id: String) -> Result<FinancingProposal, FinancingError> {
         let key = DataKey::Proposal(proposal_id);

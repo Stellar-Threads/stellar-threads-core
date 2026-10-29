@@ -283,6 +283,24 @@ impl FashionEscrowContract {
         Ok((amount * bps_i128) / 10_000)
     }
 
+    /// Deterministic split with dust remainder floor conservation
+    pub fn split_with_dust(
+        total: i128,
+        payee_bps: u32,
+        secondary_bps: u32,
+    ) -> Result<(i128, i128), EscrowError> {
+        if payee_bps + secondary_bps > 10_000 {
+            return Err(EscrowError::InvalidBasisPoints);
+        }
+        if total <= 0 {
+            return Err(EscrowError::InvalidAmount);
+        }
+        let secondary_share = (total * (secondary_bps as i128)) / 10_000;
+        // Primary payee receives total minus secondary share, absorbing any fractional dust
+        let primary_share = total - secondary_share;
+        Ok((primary_share, secondary_share))
+    }
+
     /// Read an escrow order by ID
     pub fn get_order(env: Env, order_id: u64) -> Result<EscrowOrder, EscrowError> {
         env.storage()

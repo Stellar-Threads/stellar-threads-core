@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  stellar-threads-core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - STELLAR_NETWORK=testnet
+      - SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
+    restart: unless-stopped
+    networks:
+      - threads-net
+
+networks:
+  threads-net:
+    driver: bridge

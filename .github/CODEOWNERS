@@ -1,0 +1,11 @@
+# Stellar Threads Repository Code Owners
+* @JoeADCodes
+
+# Smart Contract Critical Paths
+/contracts/ @JoeADCodes
+/contracts/src/ @JoeADCodes
+
+# Backend & Security Middleware
+/src/config/ @JoeADCodes
+/src/services/ @JoeADCodes
+/.github/workflows/ @JoeADCodes

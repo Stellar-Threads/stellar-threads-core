@@ -329,6 +329,39 @@ impl FashionEscrowContract {
         Ok(())
     }
 
+    /// Attest an independent quality inspection verdict (1: Passed, 2: Rejected, 3: Conditional)
+    pub fn attest_inspection(
+        env: Env,
+        order_id: u64,
+        inspector: Address,
+        verdict: u32,
+    ) -> Result<(), EscrowError> {
+        inspector.require_auth();
+
+        let order: EscrowOrder = env
+            .storage()
+            .persistent()
+            .get(&order_id)
+            .ok_or(EscrowError::NotFound)?;
+
+        if order.state != EscrowState::Funded {
+            return Err(EscrowError::InvalidState);
+        }
+
+        if verdict == 2 {
+            return Err(EscrowError::InspectionFailed);
+        }
+
+        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+
+        env.events().publish(
+            (TOPIC_ESCROW, symbol_short!("inspect")),
+            (order_id, inspector, verdict),
+        );
+
+        Ok(())
+    }
+
     /// Read an escrow order by ID
     pub fn get_order(env: Env, order_id: u64) -> Result<EscrowOrder, EscrowError> {
         env.storage()

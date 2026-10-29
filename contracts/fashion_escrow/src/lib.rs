@@ -745,4 +745,18 @@ mod tests {
         assert!(client.is_order_settled(&20).unwrap());
     }
 
+    #[test]
+    fn test_basis_points_boundary_rejection() {
+        let (_env, _client, _, _, _, _) = setup_test();
+
+        // Over 10,000 BPS must fail
+        let res = FashionEscrowContract::calculate_bps(100_000_000, 10_001);
+        assert_eq!(res, Err(EscrowError::InvalidBasisPoints));
+
+        // Exact 10,000 BPS returns 100%
+        let res_full = FashionEscrowContract::calculate_bps(100_000_000, 10_000).unwrap();
+        assert_eq!(res_full, 100_000_000);
+    }
+
+
 }

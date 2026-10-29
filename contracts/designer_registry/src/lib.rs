@@ -52,6 +52,8 @@ const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
 const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
 const KEY_COUNT: Symbol = symbol_short!("count");
 const KEY_BOND: Symbol = symbol_short!("bond");
+const KEY_ADMIN: Symbol = symbol_short!("admin");
+const KEY_PENDING_ADMIN: Symbol = symbol_short!("p_admin");
 
 #[contract]
 pub struct DesignerRegistryContract;
@@ -229,6 +231,29 @@ impl DesignerRegistryContract {
         env.storage().persistent().extend_ttl(&designer, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         Ok(count)
+    }
+
+    /// Propose a new registry administrator (Step 1 of 2-step governance transfer)
+    pub fn propose_admin(env: Env, current_admin: Address, new_admin: Address) -> Result<(), RegistryError> {
+        current_admin.require_auth();
+        let admin: Address = env.storage().instance().get(&KEY_ADMIN).unwrap_or(current_admin.clone());
+        if current_admin != admin {
+            return Err(RegistryError::Unauthorized);
+        }
+        env.storage().instance().set(&KEY_PENDING_ADMIN, &new_admin);
+        Ok(())
+    }
+
+    /// Claim proposed registry administrator role (Step 2 of 2-step governance transfer)
+    pub fn claim_admin(env: Env, new_admin: Address) -> Result<(), RegistryError> {
+        new_admin.require_auth();
+        let pending: Address = env.storage().instance().get(&KEY_PENDING_ADMIN).ok_or(RegistryError::Unauthorized)?;
+        if new_admin != pending {
+            return Err(RegistryError::Unauthorized);
+        }
+        env.storage().instance().set(&KEY_ADMIN, &new_admin);
+        env.storage().instance().remove(&KEY_PENDING_ADMIN);
+        Ok(())
     }
 
     /// Retrieve designer record by address

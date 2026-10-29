@@ -290,6 +290,10 @@ export class SorobanEventIndexer {
       }
     }
   }
-}
 
-export const eventIndexer = new SorobanEventIndexer();
+  public getLatestCursor(): number {
+    const state = db.getIndexerState();
+    return state.lastLedger;
+  }
+
+}

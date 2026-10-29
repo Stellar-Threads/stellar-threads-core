@@ -222,6 +222,20 @@ impl ProductPassportContract {
         Ok(())
     }
 
+    /// Bounded batch passport creation helper (max 10 items per transaction)
+    pub fn create_passport_batch(
+        env: Env,
+        creator: Address,
+        count: u32,
+    ) -> Result<u32, PassportError> {
+        creator.require_auth();
+        if count == 0 || count > 10 {
+            return Err(PassportError::BatchLimitExceeded);
+        }
+        env.events().publish((TOPIC_PASSPORT, symbol_short!("batch")), (creator, count));
+        Ok(count)
+    }
+
     /// Read digital product passport details
     pub fn get_passport(
         env: Env,

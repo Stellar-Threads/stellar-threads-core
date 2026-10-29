@@ -297,3 +297,5 @@ export class SorobanEventIndexer {
   }
 
 }
+
+export const eventIndexer = new SorobanEventIndexer();

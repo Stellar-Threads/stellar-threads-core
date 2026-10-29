@@ -86,3 +86,32 @@ financingRouter.get('/proposals/:id', async (req: Request, res: Response) => {
     });
   }
 });
+
+financingRouter.post('/calculate-roi', (req: Request, res: Response) => {
+  const { principalStroops, yieldBps, durationDays } = req.body;
+  if (!principalStroops || !yieldBps || !durationDays) {
+    res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_PARAMETERS', message: 'principalStroops, yieldBps, and durationDays are required' },
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
+
+  const p = BigInt(principalStroops);
+  const estYield = (p * BigInt(yieldBps) * BigInt(durationDays)) / (10000n * 365n);
+  const totalReturn = p + estYield;
+
+  res.json({
+    success: true,
+    data: {
+      principalStroops: p.toString(),
+      yieldBps,
+      durationDays,
+      estimatedYieldStroops: estYield.toString(),
+      totalReturnStroops: totalReturn.toString(),
+      effectiveApyPercent: (yieldBps / 100).toFixed(2),
+    },
+    timestamp: new Date().toISOString(),
+  });
+});

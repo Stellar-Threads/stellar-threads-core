@@ -79,6 +79,8 @@ const EVT_REFUNDED: Symbol = symbol_short!("refunded");
 /// Protocol 22 storage rent TTL constants (~6 months in ledgers)
 const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
 const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
+/// Minimum contribution amount: 10,000,000 Stroops (1 XLM / SAC USDC)
+const MIN_CONTRIBUTION: i128 = 10_000_000;
 
 #[contract]
 pub struct ProductionFinancingContract;
@@ -158,7 +160,7 @@ impl ProductionFinancingContract {
     ) -> Result<(), FinancingError> {
         contributor.require_auth();
 
-        if amount <= 0 {
+        if amount < MIN_CONTRIBUTION {
             return Err(FinancingError::InvalidAmount);
         }
 
@@ -666,8 +668,8 @@ mod tests {
             &applicant,
             &proposal_id,
             &token_addr,
-            &10_000_0000000,
-            &5_000_0000000,
+            &100_000_000_0000000,
+            &50_000_000_0000000,
             &2_000,
             &11_000_0000000,
             &purpose,
@@ -679,8 +681,8 @@ mod tests {
             &applicant,
             &proposal_id,
             &token_addr,
-            &10_000_0000000,
-            &5_000_0000000,
+            &100_000_000_0000000,
+            &50_000_000_0000000,
             &2_000,
             &11_000_0000000,
             &purpose,

@@ -76,6 +76,10 @@ const EVT_REPAID: Symbol = symbol_short!("repaid");
 const EVT_CLAIMED: Symbol = symbol_short!("claimed");
 const EVT_REFUNDED: Symbol = symbol_short!("refunded");
 
+/// Protocol 22 storage rent TTL constants (~6 months in ledgers)
+const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
+const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
+
 #[contract]
 pub struct ProductionFinancingContract;
 
@@ -135,6 +139,7 @@ impl ProductionFinancingContract {
         };
 
         env.storage().persistent().set(&key, &proposal);
+        env.storage().persistent().extend_ttl(&key, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         env.events().publish(
             (TOPIC_FINANCING, EVT_CREATED),
@@ -193,6 +198,7 @@ impl ProductionFinancingContract {
         }
 
         env.storage().persistent().set(&p_key, &proposal);
+        env.storage().persistent().extend_ttl(&p_key, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         env.events().publish(
             (TOPIC_FINANCING, EVT_CONTRIBUTED),

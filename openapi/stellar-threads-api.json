@@ -1,0 +1,76 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Stellar Threads Protocol API",
+    "version": "1.0.0",
+    "description": "Production REST and SSE API for Stellar Threads decentralized fashion finance and digital passports."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001/api/v1",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Check service and Stellar node health",
+        "responses": {
+          "200": {
+            "description": "Service healthy"
+          }
+        }
+      }
+    },
+    "/analytics/overview": {
+      "get": {
+        "summary": "Get protocol financial aggregates and active escrow volume",
+        "responses": {
+          "200": {
+            "description": "Analytics overview returned"
+          }
+        }
+      }
+    },
+    "/financing/calculate-roi": {
+      "post": {
+        "summary": "Calculate invoice factoring APY and returns in Stroops",
+        "responses": {
+          "200": {
+            "description": "ROI calculation output"
+          }
+        }
+      }
+    },
+    "/passports/qr/{productId}": {
+      "get": {
+        "summary": "Retrieve digital passport verification URL and NFC metadata",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "QR payload returned"
+          }
+        }
+      }
+    },
+    "/events/stream": {
+      "get": {
+        "summary": "Server-Sent Events real-time ledger stream",
+        "responses": {
+          "200": {
+            "description": "SSE stream connection established"
+          }
+        }
+      }
+    }
+  }
+}

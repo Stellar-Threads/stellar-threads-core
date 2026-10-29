@@ -194,3 +194,10 @@ export class ProtocolDatabase {
 }
 
 export const db = new ProtocolDatabase();
+
+export function getStorageHealth(): { isConnected: boolean; type: string } {
+  return {
+    isConnected: true,
+    type: 'in-memory-sqlite',
+  };
+}

@@ -1,0 +1,8 @@
+node_modules
+dist
+contracts/target
+.git
+.github
+*.log
+.env*
+coverage

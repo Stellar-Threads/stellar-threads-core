@@ -64,4 +64,25 @@ router.get('/stream', (req: Request, res: Response) => {
   });
 });
 
+
+router.get('/stream', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const sendEvent = (data: unknown) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  sendEvent({ type: 'CONNECTED', timestamp: new Date().toISOString() });
+
+  const keepAlive = setInterval(() => {
+    sendEvent({ type: 'PING' });
+  }, 15000);
+
+  req.on('close', () => {
+    clearInterval(keepAlive);
+  });
+});
+
 export default router;

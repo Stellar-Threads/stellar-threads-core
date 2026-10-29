@@ -148,3 +148,16 @@ export function validateMemo(memo?: string, memoType: 'text' | 'id' | 'hash' = '
 
   return { isValid: false, error: 'Unsupported memo type' };
 }
+
+export function validateBasisPoints(bps: number): boolean {
+  return Number.isInteger(bps) && bps >= 0 && bps <= 10000;
+}
+
+export function validateStroopAmount(amountStr: string): boolean {
+  try {
+    const val = BigInt(amountStr);
+    return val > 0n;
+  } catch {
+    return false;
+  }
+}

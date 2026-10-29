@@ -729,4 +729,20 @@ mod tests {
         let (primary, secondary) = FashionEscrowContract::split_with_dust(total, 7_000, 3_000).unwrap();
         assert_eq!(primary + secondary, total); // Exact conservation invariant!
     }
+
+    #[test]
+    fn test_dispute_resolution_and_partial_settlement() {
+        let (env, client, buyer, seller, token_address, _) = setup_test();
+
+        let order_ref = String::from_str(&env, "ORD-DISPUTE-01");
+        client.create_order(&20, &buyer, &seller, &token_address, &50_000_000, &order_ref);
+        client.fund_order(&20);
+
+        let arbitrator = Address::generate(&env);
+        // Arbitrator splits 60% refund to buyer (30M), 40% payout to seller (20M)
+        client.resolve_dispute(&20, &arbitrator, &6_000);
+
+        assert!(client.is_order_settled(&20).unwrap());
+    }
+
 }

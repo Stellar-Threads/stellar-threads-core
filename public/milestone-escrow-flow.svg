@@ -1,0 +1,20 @@
+<svg width="700" height="120" viewBox="0 0 700 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="700" height="120" rx="10" fill="#08090b" />
+  <circle cx="80" cy="60" r="24" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="2" />
+  <text x="80" y="65" fill="#10b981" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">1. Fund</text>
+
+  <line x1="110" y1="60" x2="220" y2="60" stroke="#10b981" stroke-width="2" />
+
+  <circle cx="250" cy="60" r="24" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="2" />
+  <text x="250" y="65" fill="#10b981" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">2. Mill</text>
+
+  <line x1="280" y1="60" x2="390" y2="60" stroke="#e5c158" stroke-width="2" />
+
+  <circle cx="420" cy="60" r="24" fill="#e5c158" fill-opacity="0.2" stroke="#e5c158" stroke-width="2" />
+  <text x="420" y="65" fill="#e5c158" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">3. Audit</text>
+
+  <line x1="450" y1="60" x2="560" y2="60" stroke="#71717a" stroke-width="2" />
+
+  <circle cx="590" cy="60" r="24" fill="#27272a" stroke="#71717a" stroke-width="2" />
+  <text x="590" y="65" fill="#a1a1aa" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">4. Release</text>
+</svg>

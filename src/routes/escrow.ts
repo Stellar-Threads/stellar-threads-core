@@ -209,4 +209,31 @@ router.post('/prepare-refund', async (req: Request, res: Response) => {
   }
 });
 
+
+router.post('/orders/:orderId/dispute', (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const { reason, requestedRefundBps } = req.body;
+
+  if (!reason || requestedRefundBps === undefined) {
+    res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_PAYLOAD', message: 'reason and requestedRefundBps are required' },
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
+
+  res.json({
+    success: true,
+    data: {
+      orderId: Number(orderId),
+      status: 'DisputeSubmitted',
+      reason,
+      requestedRefundBps,
+      submittedAt: new Date().toISOString(),
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
 export default router;

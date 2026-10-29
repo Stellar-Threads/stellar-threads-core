@@ -81,6 +81,8 @@ const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
 const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
 /// Minimum contribution amount: 10,000,000 Stroops (1 XLM / SAC USDC)
 const MIN_CONTRIBUTION: i128 = 10_000_000;
+const KEY_PAUSED: Symbol = symbol_short!("paused");
+const KEY_ADMIN: Symbol = symbol_short!("admin");
 
 #[contract]
 pub struct ProductionFinancingContract;
@@ -505,6 +507,39 @@ impl ProductionFinancingContract {
         );
 
         Ok(())
+    }
+
+    /// Initialize contract administrator
+    pub fn initialize_admin(env: Env, admin: Address) -> Result<(), FinancingError> {
+        if env.storage().instance().has(&KEY_ADMIN) {
+            return Err(FinancingError::AlreadyExists);
+        }
+        env.storage().instance().set(&KEY_ADMIN, &admin);
+        env.storage().instance().set(&KEY_PAUSED, &false);
+        Ok(())
+    }
+
+    /// Emergency pause toggle
+    pub fn set_paused(env: Env, admin: Address, paused: bool) -> Result<(), FinancingError> {
+        admin.require_auth();
+        let stored_admin: Address = env
+            .storage()
+            .instance()
+            .get(&KEY_ADMIN)
+            .ok_or(FinancingError::Unauthorized)?;
+
+        if admin != stored_admin {
+            return Err(FinancingError::Unauthorized);
+        }
+
+        env.storage().instance().set(&KEY_PAUSED, &paused);
+        env.events().publish((TOPIC_FINANCING, symbol_short!("paused")), paused);
+        Ok(())
+    }
+
+    /// Check if financing pool is paused
+    pub fn is_paused(env: Env) -> bool {
+        env.storage().instance().get(&KEY_PAUSED).unwrap_or(false)
     }
 
     /// Read proposal details

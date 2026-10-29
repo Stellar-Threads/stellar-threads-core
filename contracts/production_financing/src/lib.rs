@@ -911,4 +911,11 @@ mod tests {
         let yield_val = ProductionFinancingContract::calculate_factoring_yield(100_000_000i128, 1_000, 365).unwrap();
         assert_eq!(yield_val, 10_000_000i128); // 10% APY
     }
+
+    #[test]
+    fn test_default_penalty_calculation() {
+        let penalty = ProductionFinancingContract::calculate_default_penalty(100_000_000, 500).unwrap();
+        assert_eq!(penalty, 5_000_000); // 5% penalty
+    }
+
 }

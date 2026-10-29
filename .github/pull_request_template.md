@@ -1,18 +1,17 @@
-## Description
+## 🧵 Stellar Threads Pull Request
 
-Summary of core changes introduced in this pull request.
+### Summary of Improvements
+<!-- Describe the changes made and the problem being solved -->
 
-## Type of Change
+### Scope
+- [ ] Smart Contracts (Soroban Protocol 22)
+- [ ] Backend API / Services
+- [ ] Frontend Portal & UI
+- [ ] Documentation / Specifications
+- [ ] CI/CD & Infrastructure
 
-- [ ] Core backend service update
-- [ ] Shared type definition or validation utility
-- [ ] Database schema modification
-- [ ] Soroban smart contract update
-- [ ] Documentation / CI workflow
-
-## Checklist
-
-- [ ] Verified `npm run typecheck` passes with zero errors.
-- [ ] Verified `npm test` passes all backend tests.
-- [ ] No secrets, keys, or credentials committed.
-- [ ] Documentation updated where appropriate.
+### Verification Checklist
+- [ ] `cargo test` passes with 0 failures across all 4 contracts
+- [ ] `npm test` passes across backend / frontend Vitest suites
+- [ ] Protocol 22 storage rent auto-bumping verified
+- [ ] Zero unhandled lint warnings or errors

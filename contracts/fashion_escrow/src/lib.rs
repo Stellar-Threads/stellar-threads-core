@@ -25,6 +25,31 @@ pub enum EscrowError {
     ArbitrationRequired = 15,
 }
 
+/// Distinct actor roles participating in fashion escrow lifecycles
+#[contracttype]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(u32)]
+pub enum EscrowRole {
+    Buyer = 1,
+    Seller = 2,
+    Inspector = 3,
+    Admin = 4,
+    Arbitrator = 5,
+}
+
+/// Progressive milestone execution stages for fashion production orders
+#[contracttype]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(u32)]
+pub enum MilestoneStatus {
+    DepositPending = 0,
+    SamplingApproved = 1,
+    ProductionComplete = 2,
+    InspectionAttested = 3,
+    Dispatched = 4,
+    Settled = 5,
+}
+
 #[contracttype]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(u32)]

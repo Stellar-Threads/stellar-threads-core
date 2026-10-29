@@ -398,6 +398,23 @@ impl ProductionFinancingContract {
         Ok(contribution)
     }
 
+    /// Calculate repayment yield split in 10,000 basis points
+    pub fn calculate_repayment_split(
+        total_payout: i128,
+        principal_bps: u32,
+        yield_bps: u32,
+    ) -> Result<(i128, i128), FinancingError> {
+        if principal_bps + yield_bps > 10_000 {
+            return Err(FinancingError::InvalidAmount);
+        }
+        if total_payout <= 0 {
+            return Err(FinancingError::InvalidAmount);
+        }
+        let yield_amount = (total_payout * (yield_bps as i128)) / 10_000;
+        let principal_amount = total_payout - yield_amount; // Absorb any fractional dust remainder
+        Ok((principal_amount, yield_amount))
+    }
+
     /// Read proposal details
     pub fn get_proposal(env: Env, proposal_id: String) -> Result<FinancingProposal, FinancingError> {
         let key = DataKey::Proposal(proposal_id);

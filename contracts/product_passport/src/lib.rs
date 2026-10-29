@@ -162,6 +162,41 @@ impl ProductPassportContract {
         Ok(record.integrity_hash == chip_hash)
     }
 
+    /// Transition garment passport to circular economy state (4: Recycled, 5: Upcycled)
+    pub fn mark_circular_state(
+        env: Env,
+        product_id: String,
+        current_owner: Address,
+        circular_state: u32,
+    ) -> Result<(), PassportError> {
+        current_owner.require_auth();
+
+        let mut record: ProductPassportRecord = env
+            .storage()
+            .persistent()
+            .get(&product_id)
+            .ok_or(PassportError::NotFound)?;
+
+        if record.owner != current_owner {
+            return Err(PassportError::Unauthorized);
+        }
+
+        if circular_state != 4 && circular_state != 5 {
+            return Err(PassportError::InvalidMetadata);
+        }
+
+        record.status = circular_state;
+        env.storage().persistent().set(&product_id, &record);
+        env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+
+        env.events().publish(
+            (TOPIC_PASSPORT, symbol_short!("circular")),
+            (product_id, circular_state),
+        );
+
+        Ok(())
+    }
+
     /// Read digital product passport details
     pub fn get_passport(
         env: Env,

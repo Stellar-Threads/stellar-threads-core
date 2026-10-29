@@ -1,0 +1,41 @@
+{
+  "title": "Stellar Threads Protocol Observability",
+  "panels": [
+    {
+      "title": "Service Uptime (s)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "stellar_threads_uptime_seconds"
+        }
+      ]
+    },
+    {
+      "title": "Memory Heap Usage",
+      "type": "gauge",
+      "targets": [
+        {
+          "expr": "stellar_threads_heap_used_bytes"
+        }
+      ]
+    },
+    {
+      "title": "Soroban RPC Circuit State",
+      "type": "state-timeline",
+      "targets": [
+        {
+          "expr": "stellar_threads_rpc_circuit_state"
+        }
+      ]
+    },
+    {
+      "title": "Active Channel Accounts",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "stellar_threads_channel_available_count"
+        }
+      ]
+    }
+  ]
+}

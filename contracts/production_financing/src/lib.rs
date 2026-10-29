@@ -22,6 +22,11 @@ pub enum FinancingError {
     NothingToClaim = 12,
     CampaignSuccessful = 13,
     InvalidRepaymentTarget = 14,
+    ContractPaused = 15,
+    DefaultTriggered = 16,
+    CollateralMissing = 17,
+    InvalidInvestorQuota = 18,
+    GracePeriodActive = 19,
 }
 
 #[contracttype]

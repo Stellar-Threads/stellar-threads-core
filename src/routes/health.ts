@@ -40,6 +40,8 @@ router.get('/', async (_req: Request, res: Response) => {
 
   const healthData: HealthData = {
     service: 'stellar-threads-core',
+    protocol22Ready: true,
+    storageStatus: 'connected',
     version: '1.0.0-alpha',
     uptimeSeconds,
     environment: process.env.NODE_ENV || 'development',

@@ -495,6 +495,49 @@ impl FashionEscrowContract {
         Ok(())
     }
 
+    /// Execute agreed mutual partial settlement between buyer and atelier
+    pub fn settle_partial_agreement(
+        env: Env,
+        order_id: u64,
+        release_amount: i128,
+    ) -> Result<(), EscrowError> {
+        let mut order: EscrowOrder = env
+            .storage()
+            .persistent()
+            .get(&order_id)
+            .ok_or(EscrowError::NotFound)?;
+
+        order.buyer.require_auth();
+
+        if order.state != EscrowState::Funded {
+            return Err(EscrowError::InvalidState);
+        }
+
+        if release_amount <= 0 || release_amount > order.amount {
+            return Err(EscrowError::InvalidAmount);
+        }
+
+        let refund_amount = order.amount - release_amount;
+        let token_client = token::Client::new(&env, &order.token);
+
+        token_client.transfer(&env.current_contract_address(), &order.seller, &release_amount);
+        if refund_amount > 0 {
+            token_client.transfer(&env.current_contract_address(), &order.buyer, &refund_amount);
+        }
+
+        order.state = EscrowState::Released;
+        order.settled_at = env.ledger().timestamp();
+        env.storage().persistent().set(&order_id, &order);
+        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+
+        env.events().publish(
+            (TOPIC_ESCROW, symbol_short!("partial")),
+            (order_id, release_amount, refund_amount),
+        );
+
+        Ok(())
+    }
+
     /// Read an escrow order by ID
     pub fn get_order(env: Env, order_id: u64) -> Result<EscrowOrder, EscrowError> {
         env.storage()

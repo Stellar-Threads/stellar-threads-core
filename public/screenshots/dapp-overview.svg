@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090a0f"/>
+      <stop offset="50%" stop-color="#0d111a"/>
+      <stop offset="100%" stop-color="#141926"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c2333" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#111622" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="680" rx="16" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle Grid Pattern -->
+  <g opacity="0.07" stroke="#ffffff" stroke-width="1">
+    <line x1="0" y1="80" x2="1200" y2="80"/>
+    <line x1="0" y1="200" x2="1200" y2="200"/>
+    <line x1="0" y1="360" x2="1200" y2="360"/>
+    <line x1="0" y1="520" x2="1200" y2="520"/>
+    <line x1="240" y1="0" x2="240" y2="680"/>
+    <line x1="480" y1="0" x2="480" y2="680"/>
+    <line x1="720" y1="0" x2="720" y2="680"/>
+    <line x1="960" y1="0" x2="960" y2="680"/>
+  </g>
+
+  <!-- Navigation Bar -->
+  <rect x="0" y="0" width="1200" height="70" fill="#0b0e14" opacity="0.95"/>
+  <line x1="0" y1="70" x2="1200" y2="70" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- Logo -->
+  <circle cx="50" cy="35" r="16" fill="url(#accentGrad)"/>
+  <text x="75" y="42" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="#f8fafc">STELLAR <tspan fill="#38bdf8">THREADS</tspan></text>
+  <rect x="250" y="24" width="90" height="22" rx="6" fill="#1e293b"/>
+  <text x="260" y="39" font-family="monospace" font-size="11" font-weight="700" fill="#38bdf8">PROTOCOL 22</text>
+
+  <!-- Nav Tabs -->
+  <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="600" fill="#94a3b8">
+    <rect x="420" y="20" width="75" height="30" rx="6" fill="#1e293b"/>
+    <text x="435" y="40" fill="#38bdf8">Escrow</text>
+    <text x="525" y="40">Passports</text>
+    <text x="620" y="40">Financing</text>
+    <text x="715" y="40">Designers</text>
+    <text x="815" y="40">Solvency</text>
+  </g>
+
+  <!-- Wallet Pill -->
+  <rect x="980" y="18" width="180" height="34" rx="17" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <circle cx="998" cy="35" r="5" fill="#34d399"/>
+  <text x="1012" y="40" font-family="monospace" font-size="12" fill="#e2e8f0">GBTYM...42FW</text>
+  <rect x="1115" y="23" width="36" height="24" rx="12" fill="#0f172a"/>
+  <text x="1122" y="39" font-family="sans-serif" font-size="10" font-weight="700" fill="#38bdf8">TEST</text>
+
+  <!-- Metric Summary Cards -->
+  <g transform="translate(40, 95)">
+    <!-- Card 1 -->
+    <rect x="0" y="0" width="260" height="90" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1" filter="url(#shadow)"/>
+    <text x="20" y="30" font-family="sans-serif" font-size="12" fill="#94a3b8" font-weight="600">TOTAL VOLUME ESCROWED</text>
+    <text x="20" y="62" font-family="sans-serif" font-size="24" fill="#f8fafc" font-weight="800">4,850,000 <tspan font-size="14" fill="#38bdf8">XLM</tspan></text>
+    <text x="20" y="78" font-family="sans-serif" font-size="11" fill="#34d399">▲ +18.4% this cycle</text>
+
+    <!-- Card 2 -->
+    <rect x="286" y="0" width="260" height="90" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1" filter="url(#shadow)"/>
+    <text x="306" y="30" font-family="sans-serif" font-size="12" fill="#94a3b8" font-weight="600">VERIFIED PASSPORTS</text>
+    <text x="306" y="62" font-family="sans-serif" font-size="24" fill="#f8fafc" font-weight="800">1,248 <tspan font-size="14" fill="#818cf8">TWINS</tspan></text>
+    <text x="306" y="78" font-family="sans-serif" font-size="11" fill="#38bdf8">100% GOTS Cryptographic</text>
+
+    <!-- Card 3 -->
+    <rect x="572" y="0" width="260" height="90" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1" filter="url(#shadow)"/>
+    <text x="592" y="30" font-family="sans-serif" font-size="12" fill="#94a3b8" font-weight="600">FACTORING POOL APY</text>
+    <text x="592" y="62" font-family="sans-serif" font-size="24" fill="#f8fafc" font-weight="800">10.00% <tspan font-size="14" fill="#34d399">STABLE</tspan></text>
+    <text x="592" y="78" font-family="sans-serif" font-size="11" fill="#34d399">10,000 BPS zero-dust</text>
+
+    <!-- Card 4 -->
+    <rect x="858" y="0" width="260" height="90" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1" filter="url(#shadow)"/>
+    <text x="878" y="30" font-family="sans-serif" font-size="12" fill="#94a3b8" font-weight="600">PROOF-OF-RESERVE</text>
+    <text x="878" y="62" font-family="sans-serif" font-size="24" fill="#34d399" font-weight="800">100.0% <tspan font-size="14" fill="#94a3b8">SOLVENT</tspan></text>
+    <text x="878" y="78" font-family="sans-serif" font-size="11" fill="#38bdf8">On-chain Soroban audited</text>
+  </g>
+
+  <!-- Main Active Panel: Escrow Milestone Tracker -->
+  <g transform="translate(40, 215)">
+    <rect x="0" y="0" width="700" height="420" rx="14" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1" filter="url(#shadow)"/>
+    
+    <text x="30" y="40" font-family="sans-serif" font-size="16" fill="#f8fafc" font-weight="700">Order #128 — Haute Couture Bio-Silk Collection</text>
+    <text x="30" y="60" font-family="monospace" font-size="12" fill="#64748b">Escrow: CC7G...91QK • Beneficiary: Maison de L'Aurore (Paris)</text>
+    
+    <!-- Milestone Stepper -->
+    <g transform="translate(40, 95)">
+      <line x1="40" y1="20" x2="560" y2="20" stroke="#334155" stroke-width="3"/>
+      <line x1="40" y1="20" x2="380" y2="20" stroke="#34d399" stroke-width="3"/>
+      
+      <!-- Stage 1 -->
+      <circle cx="40" cy="20" r="16" fill="#065f46" stroke="#34d399" stroke-width="2"/>
+      <text x="40" y="24" font-family="sans-serif" font-size="11" font-weight="700" fill="#ecfdf5" text-anchor="middle">✓</text>
+      <text x="40" y="52" font-family="sans-serif" font-size="12" font-weight="600" fill="#f8fafc" text-anchor="middle">Funded</text>
+      <text x="40" y="68" font-family="monospace" font-size="10" fill="#34d399" text-anchor="middle">100,000 XLM</text>
+
+      <!-- Stage 2 -->
+      <circle cx="210" cy="20" r="16" fill="#065f46" stroke="#34d399" stroke-width="2"/>
+      <text x="210" y="24" font-family="sans-serif" font-size="11" font-weight="700" fill="#ecfdf5" text-anchor="middle">✓</text>
+      <text x="210" y="52" font-family="sans-serif" font-size="12" font-weight="600" fill="#f8fafc" text-anchor="middle">Production</text>
+      <text x="210" y="68" font-family="monospace" font-size="10" fill="#34d399" text-anchor="middle">Weaving Confirmed</text>
+
+      <!-- Stage 3 -->
+      <circle cx="380" cy="20" r="16" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+      <text x="380" y="24" font-family="sans-serif" font-size="11" font-weight="700" fill="#ecfdf5" text-anchor="middle">3</text>
+      <text x="380" y="52" font-family="sans-serif" font-size="12" font-weight="600" fill="#38bdf8" text-anchor="middle">Inspection</text>
+      <text x="380" y="68" font-family="monospace" font-size="10" fill="#38bdf8" text-anchor="middle">GOTS Lab Verified</text>
+
+      <!-- Stage 4 -->
+      <circle cx="560" cy="20" r="16" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+      <text x="560" y="24" font-family="sans-serif" font-size="11" font-weight="700" fill="#94a3b8" text-anchor="middle">4</text>
+      <text x="560" y="52" font-family="sans-serif" font-size="12" font-weight="600" fill="#64748b" text-anchor="middle">Settlement</text>
+      <text x="560" y="68" font-family="monospace" font-size="10" fill="#64748b" text-anchor="middle">Release to Atelier</text>
+    </g>
+
+    <!-- Details Box -->
+    <rect x="30" y="195" width="640" height="135" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+    <text x="50" y="225" font-family="sans-serif" font-size="12" fill="#94a3b8">Buyer: <tspan fill="#f8fafc" font-family="monospace">GDSV...K91Q (Galeries Lafayette)</tspan></text>
+    <text x="50" y="250" font-family="sans-serif" font-size="12" fill="#94a3b8">Seller: <tspan fill="#f8fafc" font-family="monospace">GPAR...L31A (Atelier Lyon)</tspan></text>
+    <text x="50" y="275" font-family="sans-serif" font-size="12" fill="#94a3b8">BPS Split: <tspan fill="#34d399" font-family="monospace">9,500 bps Seller (95.0%) • 500 bps Bio-Textile Royalty (5.0%)</tspan></text>
+    <text x="50" y="300" font-family="sans-serif" font-size="12" fill="#94a3b8">Storage Rent TTL: <tspan fill="#38bdf8" font-family="monospace">518,400 ledgers (~30 days auto-extended)</tspan></text>
+
+    <!-- Buttons -->
+    <rect x="30" y="355" width="180" height="42" rx="8" fill="url(#emeraldGrad)"/>
+    <text x="120" y="381" font-family="sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">Release Milestone</text>
+
+    <rect x="225" y="355" width="150" height="42" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="300" y="381" font-family="sans-serif" font-size="13" font-weight="600" fill="#f8fafc" text-anchor="middle">Dispute / Settle</text>
+  </g>
+
+  <!-- Right Panel: Garment DPP Card -->
+  <g transform="translate(765, 215)">
+    <rect x="0" y="0" width="395" height="420" rx="14" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1" filter="url(#shadow)"/>
+    <text x="25" y="35" font-family="sans-serif" font-size="15" fill="#f8fafc" font-weight="700">Digital Product Passport</text>
+    <text x="25" y="55" font-family="monospace" font-size="11" fill="#38bdf8">EU-DPP-2026-FW • Soroban NFT</text>
+
+    <!-- Garment Visual Card -->
+    <rect x="25" y="75" width="345" height="150" rx="10" fill="#0b0f19" stroke="#1e293b" stroke-width="1"/>
+    <rect x="40" y="90" width="100" height="120" rx="6" fill="#131c2e" stroke="#2563eb" stroke-width="1"/>
+    <!-- Coat Outline Vector -->
+    <path d="M60,110 L90,110 L110,130 L100,200 L50,200 L40,130 Z" fill="none" stroke="#38bdf8" stroke-width="2"/>
+    <circle cx="75" cy="120" r="4" fill="#34d399"/>
+    
+    <text x="155" y="110" font-family="sans-serif" font-size="13" font-weight="700" fill="#f8fafc">Atelier Trench FW26</text>
+    <text x="155" y="130" font-family="sans-serif" font-size="11" fill="#94a3b8">Bio-Silk &amp; Organic Linen</text>
+    <rect x="155" y="145" width="110" height="22" rx="4" fill="#065f46"/>
+    <text x="165" y="160" font-family="sans-serif" font-size="10" font-weight="700" fill="#34d399">ESG SCORE: 94/100</text>
+    <text x="155" y="190" font-family="monospace" font-size="10" fill="#64748b">Twin: 4b1a8d...f92e</text>
+
+    <!-- Provenance Timeline -->
+    <g transform="translate(25, 245)">
+      <text x="0" y="15" font-family="sans-serif" font-size="12" font-weight="700" fill="#94a3b8">CIRCULAR PROVENANCE</text>
+      
+      <circle cx="8" cy="40" r="4" fill="#34d399"/>
+      <text x="22" y="44" font-family="sans-serif" font-size="11" fill="#f8fafc">Harvested: <tspan fill="#94a3b8">Bordeaux Organic Co-op</tspan></text>
+      
+      <circle cx="8" cy="65" r="4" fill="#34d399"/>
+      <text x="22" y="69" font-family="sans-serif" font-size="11" fill="#f8fafc">Spun &amp; Woven: <tspan fill="#94a3b8">Lyon Mills (GOTS-Cert)</tspan></text>
+      
+      <circle cx="8" cy="90" r="4" fill="#38bdf8"/>
+      <text x="22" y="94" font-family="sans-serif" font-size="11" fill="#f8fafc">Assembled: <tspan fill="#38bdf8">Haute Atelier Paris</tspan></text>
+      
+      <circle cx="8" cy="115" r="4" fill="#64748b"/>
+      <text x="22" y="119" font-family="sans-serif" font-size="11" fill="#64748b">Retail Delivery: <tspan fill="#64748b">Pending Inspection</tspan></text>
+    </g>
+
+    <rect x="25" y="380" width="345" height="30" rx="6" fill="#1e293b"/>
+    <text x="197" y="400" font-family="sans-serif" font-size="11" font-weight="600" fill="#38bdf8" text-anchor="middle">Verify Physical NFC Chip</text>
+  </g>
+</svg>

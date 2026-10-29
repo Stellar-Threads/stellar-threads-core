@@ -448,6 +448,53 @@ impl FashionEscrowContract {
         token_client.balance(&account)
     }
 
+    /// Resolve active escrow dispute via designated arbitrator verdict
+    pub fn resolve_dispute(
+        env: Env,
+        order_id: u64,
+        arbitrator: Address,
+        buyer_refund_bps: u32,
+    ) -> Result<(), EscrowError> {
+        arbitrator.require_auth();
+
+        if buyer_refund_bps > 10_000 {
+            return Err(EscrowError::InvalidBasisPoints);
+        }
+
+        let mut order: EscrowOrder = env
+            .storage()
+            .persistent()
+            .get(&order_id)
+            .ok_or(EscrowError::NotFound)?;
+
+        if order.state != EscrowState::Funded {
+            return Err(EscrowError::InvalidState);
+        }
+
+        let token_client = token::Client::new(&env, &order.token);
+        let buyer_refund = (order.amount * (buyer_refund_bps as i128)) / 10_000;
+        let seller_payout = order.amount - buyer_refund; // Conserve total balance
+
+        if buyer_refund > 0 {
+            token_client.transfer(&env.current_contract_address(), &order.buyer, &buyer_refund);
+        }
+        if seller_payout > 0 {
+            token_client.transfer(&env.current_contract_address(), &order.seller, &seller_payout);
+        }
+
+        order.state = EscrowState::Released;
+        order.settled_at = env.ledger().timestamp();
+        env.storage().persistent().set(&order_id, &order);
+        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+
+        env.events().publish(
+            (TOPIC_ESCROW, symbol_short!("dispute")),
+            (order_id, arbitrator, buyer_refund, seller_payout),
+        );
+
+        Ok(())
+    }
+
     /// Read an escrow order by ID
     pub fn get_order(env: Env, order_id: u64) -> Result<EscrowOrder, EscrowError> {
         env.storage()

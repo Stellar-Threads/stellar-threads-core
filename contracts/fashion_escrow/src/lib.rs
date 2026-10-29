@@ -83,6 +83,10 @@ const EVT_RELEASED: Symbol = symbol_short!("release");
 const EVT_REFUNDED: Symbol = symbol_short!("refund");
 const EVT_CANCELLED: Symbol = symbol_short!("cancel");
 
+/// Protocol 22 storage rent TTL constants (~6 months in ledgers)
+const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
+const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
+
 #[contract]
 pub struct FashionEscrowContract;
 
@@ -128,6 +132,7 @@ impl FashionEscrowContract {
         };
 
         env.storage().persistent().set(&order_id, &order);
+        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         // Emit creation event
         env.events().publish(
@@ -161,6 +166,7 @@ impl FashionEscrowContract {
         order.funded_at = now;
 
         env.storage().persistent().set(&order_id, &order);
+        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         // Emit funding event
         env.events().publish(

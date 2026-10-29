@@ -96,7 +96,11 @@ impl DesignerRegistryContract {
         };
 
         env.storage().persistent().set(&designer, &record);
-        env.storage().persistent().extend_ttl(&designer, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &designer,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         let count: u32 = env.storage().instance().get(&KEY_COUNT).unwrap_or(0);
         env.storage().instance().set(&KEY_COUNT, &(count + 1));
@@ -138,7 +142,11 @@ impl DesignerRegistryContract {
         record.metadata_uri = metadata_uri.clone();
 
         env.storage().persistent().set(&designer, &record);
-        env.storage().persistent().extend_ttl(&designer, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &designer,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         // Emit update event: topic: (designer, updated), data: (designer, brand_name, metadata_uri)
         env.events().publish(
@@ -228,15 +236,27 @@ impl DesignerRegistryContract {
         record.fulfilled_orders += 1;
         let count = record.fulfilled_orders;
         env.storage().persistent().set(&designer, &record);
-        env.storage().persistent().extend_ttl(&designer, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &designer,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         Ok(count)
     }
 
     /// Propose a new registry administrator (Step 1 of 2-step governance transfer)
-    pub fn propose_admin(env: Env, current_admin: Address, new_admin: Address) -> Result<(), RegistryError> {
+    pub fn propose_admin(
+        env: Env,
+        current_admin: Address,
+        new_admin: Address,
+    ) -> Result<(), RegistryError> {
         current_admin.require_auth();
-        let admin: Address = env.storage().instance().get(&KEY_ADMIN).unwrap_or(current_admin.clone());
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&KEY_ADMIN)
+            .unwrap_or(current_admin.clone());
         if current_admin != admin {
             return Err(RegistryError::Unauthorized);
         }
@@ -247,7 +267,11 @@ impl DesignerRegistryContract {
     /// Claim proposed registry administrator role (Step 2 of 2-step governance transfer)
     pub fn claim_admin(env: Env, new_admin: Address) -> Result<(), RegistryError> {
         new_admin.require_auth();
-        let pending: Address = env.storage().instance().get(&KEY_PENDING_ADMIN).ok_or(RegistryError::Unauthorized)?;
+        let pending: Address = env
+            .storage()
+            .instance()
+            .get(&KEY_PENDING_ADMIN)
+            .ok_or(RegistryError::Unauthorized)?;
         if new_admin != pending {
             return Err(RegistryError::Unauthorized);
         }
@@ -408,5 +432,4 @@ mod tests {
         let count = client.record_fulfillment(&designer);
         assert_eq!(count, 1);
     }
-
 }

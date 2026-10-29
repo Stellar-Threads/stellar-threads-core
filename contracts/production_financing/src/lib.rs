@@ -1,7 +1,7 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, symbol_short, token, Address, Env,
-    String, Symbol,
+    contract, contracterror, contractimpl, contracttype, symbol_short, token, Address, Env, String,
+    Symbol,
 };
 
 #[contracterror]
@@ -143,7 +143,11 @@ impl ProductionFinancingContract {
         };
 
         env.storage().persistent().set(&key, &proposal);
-        env.storage().persistent().extend_ttl(&key, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &key,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_FINANCING, EVT_CREATED),
@@ -202,7 +206,11 @@ impl ProductionFinancingContract {
         }
 
         env.storage().persistent().set(&p_key, &proposal);
-        env.storage().persistent().extend_ttl(&p_key, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &p_key,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_FINANCING, EVT_CONTRIBUTED),
@@ -244,7 +252,11 @@ impl ProductionFinancingContract {
 
         let payout = proposal.current_funded;
         let token_client = token::Client::new(&env, &proposal.token);
-        token_client.transfer(&env.current_contract_address(), &proposal.applicant, &payout);
+        token_client.transfer(
+            &env.current_contract_address(),
+            &proposal.applicant,
+            &payout,
+        );
 
         proposal.status = ProposalStatus::ProductionActive;
         env.storage().persistent().set(&p_key, &proposal);
@@ -477,7 +489,8 @@ impl ProductionFinancingContract {
         if principal <= 0 || annual_yield_bps > 10_000 {
             return Err(FinancingError::InvalidAmount);
         }
-        let total_yield = (principal * (annual_yield_bps as i128) * (duration_days as i128)) / (10_000 * 365);
+        let total_yield =
+            (principal * (annual_yield_bps as i128) * (duration_days as i128)) / (10_000 * 365);
         Ok(total_yield)
     }
 
@@ -533,7 +546,8 @@ impl ProductionFinancingContract {
         }
 
         env.storage().instance().set(&KEY_PAUSED, &paused);
-        env.events().publish((TOPIC_FINANCING, symbol_short!("paused")), paused);
+        env.events()
+            .publish((TOPIC_FINANCING, symbol_short!("paused")), paused);
         Ok(())
     }
 
@@ -568,7 +582,11 @@ impl ProductionFinancingContract {
 
         let tranche_amount = (proposal.current_funded * (tranche_bps as i128)) / 10_000;
         let token_client = token::Client::new(&env, &proposal.token);
-        token_client.transfer(&env.current_contract_address(), &proposal.applicant, &tranche_amount);
+        token_client.transfer(
+            &env.current_contract_address(),
+            &proposal.applicant,
+            &tranche_amount,
+        );
 
         env.events().publish(
             (TOPIC_FINANCING, symbol_short!("tranche")),
@@ -606,8 +624,12 @@ impl ProductionFinancingContract {
         let to_key = DataKey::Contribution(proposal_id.clone(), to.clone());
         let to_contrib: i128 = env.storage().persistent().get(&to_key).unwrap_or(0);
 
-        env.storage().persistent().set(&from_key, &(from_contrib - transfer_amount));
-        env.storage().persistent().set(&to_key, &(to_contrib + transfer_amount));
+        env.storage()
+            .persistent()
+            .set(&from_key, &(from_contrib - transfer_amount));
+        env.storage()
+            .persistent()
+            .set(&to_key, &(to_contrib + transfer_amount));
 
         env.events().publish(
             (TOPIC_FINANCING, symbol_short!("claimxfr")),
@@ -630,7 +652,10 @@ impl ProductionFinancingContract {
     }
 
     /// Read proposal details
-    pub fn get_proposal(env: Env, proposal_id: String) -> Result<FinancingProposal, FinancingError> {
+    pub fn get_proposal(
+        env: Env,
+        proposal_id: String,
+    ) -> Result<FinancingProposal, FinancingError> {
         let key = DataKey::Proposal(proposal_id);
         env.storage()
             .persistent()
@@ -663,7 +688,10 @@ mod tests {
     use soroban_sdk::testutils::{Address as _, Ledger};
     use soroban_sdk::{token, Env, String};
 
-    fn create_test_token<'a>(env: &Env, admin: &Address) -> (Address, token::StellarAssetClient<'a>) {
+    fn create_test_token<'a>(
+        env: &Env,
+        admin: &Address,
+    ) -> (Address, token::StellarAssetClient<'a>) {
         let contract_id = env.register_stellar_asset_contract_v2(admin.clone());
         let client = token::StellarAssetClient::new(env, &contract_id.address());
         (contract_id.address(), client)
@@ -905,17 +933,21 @@ mod tests {
 
     #[test]
     fn test_waterfall_and_factoring_yield() {
-        let (p, y) = ProductionFinancingContract::calculate_repayment_split(100_000_003i128, 8_000, 2_000).unwrap();
+        let (p, y) =
+            ProductionFinancingContract::calculate_repayment_split(100_000_003i128, 8_000, 2_000)
+                .unwrap();
         assert_eq!(p + y, 100_000_003i128); // Invariant holds!
 
-        let yield_val = ProductionFinancingContract::calculate_factoring_yield(100_000_000i128, 1_000, 365).unwrap();
+        let yield_val =
+            ProductionFinancingContract::calculate_factoring_yield(100_000_000i128, 1_000, 365)
+                .unwrap();
         assert_eq!(yield_val, 10_000_000i128); // 10% APY
     }
 
     #[test]
     fn test_default_penalty_calculation() {
-        let penalty = ProductionFinancingContract::calculate_default_penalty(100_000_000, 500).unwrap();
+        let penalty =
+            ProductionFinancingContract::calculate_default_penalty(100_000_000, 500).unwrap();
         assert_eq!(penalty, 5_000_000); // 5% penalty
     }
-
 }

@@ -99,7 +99,11 @@ impl ProductPassportContract {
         };
 
         env.storage().persistent().set(&product_id, &record);
-        env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &product_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         // Emit passport creation event: topic: (passport, created), data: (product_id, creator, integrity_hash)
         env.events().publish(
@@ -128,7 +132,11 @@ impl ProductPassportContract {
         record.origin_country = origin_country;
         record.material_composition = material_composition;
         env.storage().persistent().set(&product_id, &record);
-        env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &product_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         Ok(())
     }
@@ -187,7 +195,11 @@ impl ProductPassportContract {
 
         record.status = circular_state;
         env.storage().persistent().set(&product_id, &record);
-        env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &product_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_PASSPORT, symbol_short!("circular")),
@@ -212,7 +224,11 @@ impl ProductPassportContract {
             .get(&product_id)
             .ok_or(PassportError::NotFound)?;
 
-        env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &product_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_PASSPORT, symbol_short!("cosign")),
@@ -232,7 +248,8 @@ impl ProductPassportContract {
         if count == 0 || count > 10 {
             return Err(PassportError::BatchLimitExceeded);
         }
-        env.events().publish((TOPIC_PASSPORT, symbol_short!("batch")), (creator, count));
+        env.events()
+            .publish((TOPIC_PASSPORT, symbol_short!("batch")), (creator, count));
         Ok(count)
     }
 
@@ -285,7 +302,11 @@ impl ProductPassportContract {
         record.status = 2; // Transferred
 
         env.storage().persistent().set(&product_id, &record);
-        env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &product_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         // Emit transfer event
         env.events().publish(
@@ -376,8 +397,14 @@ mod tests {
         let brand = String::from_str(&env, "Atelier Sol");
         let item = String::from_str(&env, "Cashmere Trench Coat");
         let uri = String::from_str(&env, "ipfs://metadata-hash-test");
-        let valid_hash = String::from_str(&env, "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b");
-        let fake_hash = String::from_str(&env, "0000000000000000000000000000000000000000000000000000000000000000");
+        let valid_hash = String::from_str(
+            &env,
+            "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b",
+        );
+        let fake_hash = String::from_str(
+            &env,
+            "0000000000000000000000000000000000000000000000000000000000000000",
+        );
 
         client.create_passport(&creator, &product_id, &brand, &item, &uri, &valid_hash, &1);
 
@@ -402,7 +429,8 @@ mod tests {
 
         client.create_passport(&creator, &product_id, &brand, &item, &uri, &hash, &10);
 
-        let res = client.try_create_passport(&creator, &product_id, &brand, &item, &uri, &hash, &10);
+        let res =
+            client.try_create_passport(&creator, &product_id, &brand, &item, &uri, &hash, &10);
         assert_eq!(res, Err(Ok(PassportError::AlreadyExists)));
     }
 
@@ -480,5 +508,4 @@ mod tests {
         // Check royalty
         assert_eq!(client.get_royalty_bps(&product_id), 500);
     }
-
 }

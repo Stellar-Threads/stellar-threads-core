@@ -1,7 +1,7 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, symbol_short, token, Address, Env,
-    String, Symbol,
+    contract, contracterror, contractimpl, contracttype, symbol_short, token, Address, Env, String,
+    Symbol,
 };
 
 #[contracterror]
@@ -140,7 +140,11 @@ impl FashionEscrowContract {
         };
 
         env.storage().persistent().set(&order_id, &order);
-        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &order_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         // Emit creation event
         env.events().publish(
@@ -174,7 +178,11 @@ impl FashionEscrowContract {
         order.funded_at = now;
 
         env.storage().persistent().set(&order_id, &order);
-        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &order_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         // Emit funding event
         env.events().publish(
@@ -201,7 +209,11 @@ impl FashionEscrowContract {
 
         // Transfer tokens from escrow contract to seller
         let token_client = token::Client::new(&env, &order.token);
-        token_client.transfer(&env.current_contract_address(), &order.seller, &order.amount);
+        token_client.transfer(
+            &env.current_contract_address(),
+            &order.seller,
+            &order.amount,
+        );
 
         let now = env.ledger().timestamp();
         order.state = EscrowState::Released;
@@ -271,10 +283,8 @@ impl FashionEscrowContract {
         env.storage().persistent().set(&order_id, &order);
 
         // Emit cancellation event
-        env.events().publish(
-            (TOPIC_ESCROW, EVT_CANCELLED),
-            (order_id, order.buyer),
-        );
+        env.events()
+            .publish((TOPIC_ESCROW, EVT_CANCELLED), (order_id, order.buyer));
 
         Ok(())
     }
@@ -327,7 +337,11 @@ impl FashionEscrowContract {
             return Err(EscrowError::InvalidState);
         }
 
-        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &order_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_ESCROW, symbol_short!("milestone")),
@@ -360,7 +374,11 @@ impl FashionEscrowContract {
             return Err(EscrowError::InspectionFailed);
         }
 
-        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &order_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_ESCROW, symbol_short!("inspect")),
@@ -400,7 +418,11 @@ impl FashionEscrowContract {
         order.settled_at = now;
 
         env.storage().persistent().set(&order_id, &order);
-        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &order_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_ESCROW, EVT_REFUNDED),
@@ -434,7 +456,8 @@ impl FashionEscrowContract {
         }
 
         env.storage().instance().set(&KEY_PAUSED, &paused);
-        env.events().publish((TOPIC_ESCROW, symbol_short!("paused")), paused);
+        env.events()
+            .publish((TOPIC_ESCROW, symbol_short!("paused")), paused);
         Ok(())
     }
 
@@ -480,13 +503,21 @@ impl FashionEscrowContract {
             token_client.transfer(&env.current_contract_address(), &order.buyer, &buyer_refund);
         }
         if seller_payout > 0 {
-            token_client.transfer(&env.current_contract_address(), &order.seller, &seller_payout);
+            token_client.transfer(
+                &env.current_contract_address(),
+                &order.seller,
+                &seller_payout,
+            );
         }
 
         order.state = EscrowState::Released;
         order.settled_at = env.ledger().timestamp();
         env.storage().persistent().set(&order_id, &order);
-        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &order_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_ESCROW, symbol_short!("dispute")),
@@ -521,15 +552,27 @@ impl FashionEscrowContract {
         let refund_amount = order.amount - release_amount;
         let token_client = token::Client::new(&env, &order.token);
 
-        token_client.transfer(&env.current_contract_address(), &order.seller, &release_amount);
+        token_client.transfer(
+            &env.current_contract_address(),
+            &order.seller,
+            &release_amount,
+        );
         if refund_amount > 0 {
-            token_client.transfer(&env.current_contract_address(), &order.buyer, &refund_amount);
+            token_client.transfer(
+                &env.current_contract_address(),
+                &order.buyer,
+                &refund_amount,
+            );
         }
 
         order.state = EscrowState::Released;
         order.settled_at = env.ledger().timestamp();
         env.storage().persistent().set(&order_id, &order);
-        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+        env.storage().persistent().extend_ttl(
+            &order_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_ESCROW, symbol_short!("partial")),
@@ -546,7 +589,9 @@ impl FashionEscrowContract {
             .persistent()
             .get(&order_id)
             .ok_or(EscrowError::NotFound)?;
-        Ok(order.state == EscrowState::Released || order.state == EscrowState::Refunded || order.state == EscrowState::Cancelled)
+        Ok(order.state == EscrowState::Released
+            || order.state == EscrowState::Refunded
+            || order.state == EscrowState::Cancelled)
     }
 
     /// Check reentrancy guard status
@@ -588,7 +633,9 @@ mod tests {
         let client = FashionEscrowContractClient::new(&env, &contract_id);
 
         let token_admin = Address::generate(&env);
-        let token_address = env.register_stellar_asset_contract_v2(token_admin).address();
+        let token_address = env
+            .register_stellar_asset_contract_v2(token_admin)
+            .address();
         let token_admin_client = StellarAssetClient::new(&env, &token_address);
 
         let buyer = Address::generate(&env);
@@ -597,7 +644,14 @@ mod tests {
         // Mint 100,000,000 Stroops (10 XLM) to buyer
         token_admin_client.mint(&buyer, &100_000_000);
 
-        (env, client, buyer, seller, token_address, token_admin_client)
+        (
+            env,
+            client,
+            buyer,
+            seller,
+            token_address,
+            token_admin_client,
+        )
     }
 
     #[test]
@@ -623,7 +677,8 @@ mod tests {
         let order_ref = String::from_str(&env, "ORD-FW26-001");
         client.create_order(&1, &buyer, &seller, &token_address, &25_000_000, &order_ref);
 
-        let res = client.try_create_order(&1, &buyer, &seller, &token_address, &25_000_000, &order_ref);
+        let res =
+            client.try_create_order(&1, &buyer, &seller, &token_address, &25_000_000, &order_ref);
         assert_eq!(res, Err(Ok(EscrowError::AlreadyExists)));
     }
 
@@ -709,15 +764,18 @@ mod tests {
         assert_eq!(res1, Err(Ok(EscrowError::InvalidAmount)));
 
         // Amount < MIN_ESCROW_AMOUNT -> BelowMinimumEscrow
-        let res2 = client.try_create_order(&7, &buyer, &seller, &token_address, &5_000_000, &valid_ref);
+        let res2 =
+            client.try_create_order(&7, &buyer, &seller, &token_address, &5_000_000, &valid_ref);
         assert_eq!(res2, Err(Ok(EscrowError::BelowMinimumEscrow)));
 
         // Same buyer and seller -> SameBuyerSeller
-        let res3 = client.try_create_order(&8, &buyer, &buyer, &token_address, &10_000_000, &valid_ref);
+        let res3 =
+            client.try_create_order(&8, &buyer, &buyer, &token_address, &10_000_000, &valid_ref);
         assert_eq!(res3, Err(Ok(EscrowError::SameBuyerSeller)));
 
         // Empty ref -> InvalidOrderRef
-        let res4 = client.try_create_order(&9, &buyer, &seller, &token_address, &10_000_000, &empty_ref);
+        let res4 =
+            client.try_create_order(&9, &buyer, &seller, &token_address, &10_000_000, &empty_ref);
         assert_eq!(res4, Err(Ok(EscrowError::InvalidOrderRef)));
     }
 
@@ -726,7 +784,8 @@ mod tests {
         let (_env, _client, _, _, _, _) = setup_test();
 
         let total = 100_000_003i128; // Uneven amount to test integer dust remainder
-        let (primary, secondary) = FashionEscrowContract::split_with_dust(total, 7_000, 3_000).unwrap();
+        let (primary, secondary) =
+            FashionEscrowContract::split_with_dust(total, 7_000, 3_000).unwrap();
         assert_eq!(primary + secondary, total); // Exact conservation invariant!
     }
 
@@ -735,7 +794,14 @@ mod tests {
         let (env, client, buyer, seller, token_address, _) = setup_test();
 
         let order_ref = String::from_str(&env, "ORD-DISPUTE-01");
-        client.create_order(&20, &buyer, &seller, &token_address, &50_000_000, &order_ref);
+        client.create_order(
+            &20,
+            &buyer,
+            &seller,
+            &token_address,
+            &50_000_000,
+            &order_ref,
+        );
         client.fund_order(&20);
 
         let arbitrator = Address::generate(&env);
@@ -757,6 +823,4 @@ mod tests {
         let res_full = FashionEscrowContract::calculate_bps(100_000_000, 10_000).unwrap();
         assert_eq!(res_full, 100_000_000);
     }
-
-
 }

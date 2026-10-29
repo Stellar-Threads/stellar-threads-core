@@ -13,6 +13,7 @@ import passportsRouter from './routes/passports';
 import escrowRouter from './routes/escrow';
 import indexerRouter from './routes/indexer';
 import { financingRouter } from './routes/financing';
+import { getCorsOptions } from './config/cors';
 import { logger } from './utils/logger';
 
 export function createApp(): express.Application {
@@ -20,13 +21,7 @@ export function createApp(): express.Application {
 
   // Security and middleware
   app.use(helmet());
-  app.use(
-    cors({
-      origin: '*', // Allow frontend client requests
-      methods: ['GET', 'POST', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-    })
-  );
+  app.use(cors(getCorsOptions()));
   app.use(express.json());
 
   // Request logger
@@ -64,14 +59,15 @@ export function createApp(): express.Application {
 
   // Global error handler
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    const isCorsError = err instanceof Error && err.message.includes('CORS');
     logger.error('Unhandled internal server error', {
       error: err instanceof Error ? err.message : String(err),
     });
-    res.status(500).json({
+    res.status(isCorsError ? 403 : 500).json({
       success: false,
       error: {
-        code: 'INTERNAL_ERROR',
-        message: 'An unexpected internal error occurred',
+        code: isCorsError ? 'FORBIDDEN_ORIGIN' : 'INTERNAL_ERROR',
+        message: err instanceof Error ? err.message : 'An unexpected internal error occurred',
       },
       timestamp: new Date().toISOString(),
     });

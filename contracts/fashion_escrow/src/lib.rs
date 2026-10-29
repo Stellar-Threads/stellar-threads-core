@@ -304,7 +304,7 @@ impl FashionEscrowContract {
         }
         let secondary_share = (total * (secondary_bps as i128)) / 10_000;
         // Primary payee receives total minus secondary share, absorbing any fractional dust
-        let primary_share = total - secondary_share;
+        let primary_share = total.saturating_sub(secondary_share);
         Ok((primary_share, secondary_share))
     }
 

@@ -362,6 +362,46 @@ impl FashionEscrowContract {
         Ok(())
     }
 
+    /// Claim automated timeout refund if delivery/inspection is not confirmed within window
+    pub fn claim_timeout_refund(
+        env: Env,
+        order_id: u64,
+        timeout_threshold_secs: u64,
+    ) -> Result<(), EscrowError> {
+        let mut order: EscrowOrder = env
+            .storage()
+            .persistent()
+            .get(&order_id)
+            .ok_or(EscrowError::NotFound)?;
+
+        order.buyer.require_auth();
+
+        if order.state != EscrowState::Funded {
+            return Err(EscrowError::InvalidState);
+        }
+
+        let now = env.ledger().timestamp();
+        if now < order.funded_at + timeout_threshold_secs {
+            return Err(EscrowError::DisputeWindowExpired);
+        }
+
+        let token_client = token::Client::new(&env, &order.token);
+        token_client.transfer(&env.current_contract_address(), &order.buyer, &order.amount);
+
+        order.state = EscrowState::Refunded;
+        order.settled_at = now;
+
+        env.storage().persistent().set(&order_id, &order);
+        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+
+        env.events().publish(
+            (TOPIC_ESCROW, EVT_REFUNDED),
+            (order_id, order.buyer, order.amount),
+        );
+
+        Ok(())
+    }
+
     /// Read an escrow order by ID
     pub fn get_order(env: Env, order_id: u64) -> Result<EscrowOrder, EscrowError> {
         env.storage()

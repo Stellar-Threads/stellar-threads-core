@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import healthRouter from './routes/health';
+import metricsRouter from './routes/metrics';
 import networkRouter from './routes/network';
 import protocolRouter from './routes/protocol';
 import validationRouter from './routes/validation';
@@ -35,6 +36,7 @@ export function createApp(): express.Application {
 
   // Mount routes
   app.use('/health', healthRouter);
+  app.use('/metrics', metricsRouter);
   app.use('/api/v1/network', networkRouter);
   app.use('/api/v1/protocol', protocolRouter);
   app.use('/api/v1/validate', validationRouter);

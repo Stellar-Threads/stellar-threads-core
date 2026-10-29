@@ -88,6 +88,7 @@ const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
 const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
 const KEY_PAUSED: Symbol = symbol_short!("paused");
 const KEY_ADMIN: Symbol = symbol_short!("admin");
+const KEY_LOCKED: Symbol = symbol_short!("locked");
 /// Minimum escrow amount: 10,000,000 Stroops (1.0 XLM / SAC USDC)
 const MIN_ESCROW_AMOUNT: i128 = 10_000_000;
 
@@ -546,6 +547,11 @@ impl FashionEscrowContract {
             .get(&order_id)
             .ok_or(EscrowError::NotFound)?;
         Ok(order.state == EscrowState::Released || order.state == EscrowState::Refunded || order.state == EscrowState::Cancelled)
+    }
+
+    /// Check reentrancy guard status
+    pub fn is_locked(env: Env) -> bool {
+        env.storage().instance().get(&KEY_LOCKED).unwrap_or(false)
     }
 
     /// Read an escrow order by ID

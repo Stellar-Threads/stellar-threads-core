@@ -37,6 +37,7 @@ export function createApp(): express.Application {
 
   // Mount routes
   app.use('/health', healthRouter);
+  app.use('/api/v1/health', healthRouter);
   app.use('/metrics', metricsRouter);
   app.use('/api/v1/analytics', analyticsRouter);
   app.use('/api/v1/network', networkRouter);

@@ -50,6 +50,7 @@ const EVT_UPDATED: Symbol = symbol_short!("updated");
 const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
 const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
 const KEY_COUNT: Symbol = symbol_short!("count");
+const KEY_BOND: Symbol = symbol_short!("bond");
 
 #[contract]
 pub struct DesignerRegistryContract;
@@ -199,6 +200,17 @@ impl DesignerRegistryContract {
     /// Return total registered designer count
     pub fn get_total_designers(env: Env) -> u32 {
         env.storage().instance().get(&KEY_COUNT).unwrap_or(0)
+    }
+
+    /// Set minimum verification stake bond for HauteCouture ateliers
+    pub fn set_verification_bond(env: Env, bond_amount: i128) -> Result<(), RegistryError> {
+        env.storage().instance().set(&KEY_BOND, &bond_amount);
+        Ok(())
+    }
+
+    /// Query required verification stake bond
+    pub fn get_verification_bond(env: Env) -> i128 {
+        env.storage().instance().get(&KEY_BOND).unwrap_or(0)
     }
 
     /// Retrieve designer record by address

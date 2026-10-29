@@ -1,19 +1,16 @@
 ---
 name: Feature Request
-about: Suggest a new protocol service, endpoint, or contract capability
-title: '[FEAT] '
-labels: ['enhancement', 'core']
-assignees: ''
+about: Suggest an idea or enhancement for Stellar Threads
+title: "[FEATURE]: "
+labels: enhancement
+assignees: JoeADCodes
 ---
 
-## Description
+**Is your feature request related to a problem? Please describe.**
+A clear description of the fashion finance or digital passport challenge.
 
-Summary of proposed protocol enhancement.
+**Proposed Solution**
+Explain how this should be implemented on Stellar / Soroban Protocol 22.
 
-## Motivation
-
-Why is this needed for fashion finance or trade?
-
-## Implementation Idea
-
-Proposed architectural design or endpoints.
+**Stellar Network Relevance**
+How does this leverage Soroban smart contracts, SEP standards, or Horizon RPC?

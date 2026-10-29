@@ -301,6 +301,34 @@ impl FashionEscrowContract {
         Ok((primary_share, secondary_share))
     }
 
+    /// Advance the production milestone stage for a funded fashion order
+    pub fn advance_milestone(
+        env: Env,
+        order_id: u64,
+        next_status: MilestoneStatus,
+    ) -> Result<(), EscrowError> {
+        let order: EscrowOrder = env
+            .storage()
+            .persistent()
+            .get(&order_id)
+            .ok_or(EscrowError::NotFound)?;
+
+        order.seller.require_auth();
+
+        if order.state != EscrowState::Funded {
+            return Err(EscrowError::InvalidState);
+        }
+
+        env.storage().persistent().extend_ttl(&order_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+
+        env.events().publish(
+            (TOPIC_ESCROW, symbol_short!("milestone")),
+            (order_id, next_status as u32),
+        );
+
+        Ok(())
+    }
+
     /// Read an escrow order by ID
     pub fn get_order(env: Env, order_id: u64) -> Result<EscrowOrder, EscrowError> {
         env.storage()

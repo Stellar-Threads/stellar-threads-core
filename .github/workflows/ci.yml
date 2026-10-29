@@ -51,7 +51,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Cargo Format Check
-        run: cargo fmt --check --manifest-path contracts/Cargo.toml || true
+        run: cargo fmt --all --check --manifest-path contracts/Cargo.toml
 
       - name: Cargo Check
         run: cargo check --manifest-path contracts/Cargo.toml --locked

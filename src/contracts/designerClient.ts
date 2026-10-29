@@ -167,4 +167,14 @@ export class DesignerRegistryClient {
     const prepared = await this.server.prepareTransaction(tx);
     return prepared.toXDR();
   }
+
+  public formatDesignerTier(tierCode: number): string {
+    switch (tierCode) {
+      case 1: return 'Emerging';
+      case 2: return 'VerifiedAtelier';
+      case 3: return 'HauteCouture';
+      default: return 'Standard';
+    }
+  }
+
 }

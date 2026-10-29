@@ -88,6 +88,8 @@ const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
 const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
 const KEY_PAUSED: Symbol = symbol_short!("paused");
 const KEY_ADMIN: Symbol = symbol_short!("admin");
+/// Minimum escrow amount: 10,000,000 Stroops (1.0 XLM / SAC USDC)
+const MIN_ESCROW_AMOUNT: i128 = 10_000_000;
 
 #[contract]
 pub struct FashionEscrowContract;
@@ -108,6 +110,9 @@ impl FashionEscrowContract {
 
         if amount <= 0 {
             return Err(EscrowError::InvalidAmount);
+        }
+        if amount < MIN_ESCROW_AMOUNT {
+            return Err(EscrowError::BelowMinimumEscrow);
         }
         if buyer == seller {
             return Err(EscrowError::SameBuyerSeller);
@@ -477,8 +482,8 @@ mod tests {
         let buyer = Address::generate(&env);
         let seller = Address::generate(&env);
 
-        // Mint 10,000 units to buyer
-        token_admin_client.mint(&buyer, &10_000);
+        // Mint 100,000,000 Stroops (10 XLM) to buyer
+        token_admin_client.mint(&buyer, &100_000_000);
 
         (env, client, buyer, seller, token_address, token_admin_client)
     }
@@ -488,14 +493,14 @@ mod tests {
         let (env, client, buyer, seller, token_address, _) = setup_test();
 
         let order_ref = String::from_str(&env, "ORD-FW26-001");
-        client.create_order(&1, &buyer, &seller, &token_address, &2_500, &order_ref);
+        client.create_order(&1, &buyer, &seller, &token_address, &25_000_000, &order_ref);
 
         assert!(client.has_order(&1));
         let order = client.get_order(&1);
         assert_eq!(order.order_id, 1);
         assert_eq!(order.buyer, buyer);
         assert_eq!(order.seller, seller);
-        assert_eq!(order.amount, 2_500);
+        assert_eq!(order.amount, 25_000_000);
         assert_eq!(order.state, EscrowState::Created);
     }
 
@@ -504,9 +509,9 @@ mod tests {
         let (env, client, buyer, seller, token_address, _) = setup_test();
 
         let order_ref = String::from_str(&env, "ORD-FW26-001");
-        client.create_order(&1, &buyer, &seller, &token_address, &2_500, &order_ref);
+        client.create_order(&1, &buyer, &seller, &token_address, &25_000_000, &order_ref);
 
-        let res = client.try_create_order(&1, &buyer, &seller, &token_address, &2_500, &order_ref);
+        let res = client.try_create_order(&1, &buyer, &seller, &token_address, &25_000_000, &order_ref);
         assert_eq!(res, Err(Ok(EscrowError::AlreadyExists)));
     }
 
@@ -516,21 +521,21 @@ mod tests {
         let token_client = token::Client::new(&env, &token_address);
 
         let order_ref = String::from_str(&env, "ORD-FW26-002");
-        client.create_order(&2, &buyer, &seller, &token_address, &3_000, &order_ref);
+        client.create_order(&2, &buyer, &seller, &token_address, &30_000_000, &order_ref);
 
         // Fund escrow
         client.fund_order(&2);
         let funded_order = client.get_order(&2);
         assert_eq!(funded_order.state, EscrowState::Funded);
-        assert_eq!(token_client.balance(&client.address), 3_000);
-        assert_eq!(token_client.balance(&buyer), 7_000);
+        assert_eq!(token_client.balance(&client.address), 30_000_000);
+        assert_eq!(token_client.balance(&buyer), 70_000_000);
 
         // Release escrow to seller
         client.release_funds(&2);
         let released_order = client.get_order(&2);
         assert_eq!(released_order.state, EscrowState::Released);
         assert_eq!(token_client.balance(&client.address), 0);
-        assert_eq!(token_client.balance(&seller), 3_000);
+        assert_eq!(token_client.balance(&seller), 30_000_000);
     }
 
     #[test]
@@ -539,18 +544,18 @@ mod tests {
         let token_client = token::Client::new(&env, &token_address);
 
         let order_ref = String::from_str(&env, "ORD-FW26-003");
-        client.create_order(&3, &buyer, &seller, &token_address, &1_500, &order_ref);
+        client.create_order(&3, &buyer, &seller, &token_address, &15_000_000, &order_ref);
 
         // Fund escrow
         client.fund_order(&3);
-        assert_eq!(token_client.balance(&client.address), 1_500);
+        assert_eq!(token_client.balance(&client.address), 15_000_000);
 
         // Refund escrow back to buyer
         client.refund_funds(&3);
         let refunded_order = client.get_order(&3);
         assert_eq!(refunded_order.state, EscrowState::Refunded);
         assert_eq!(token_client.balance(&client.address), 0);
-        assert_eq!(token_client.balance(&buyer), 10_000);
+        assert_eq!(token_client.balance(&buyer), 100_000_000);
     }
 
     #[test]
@@ -558,7 +563,7 @@ mod tests {
         let (env, client, buyer, seller, token_address, _) = setup_test();
 
         let order_ref = String::from_str(&env, "ORD-FW26-004");
-        client.create_order(&4, &buyer, &seller, &token_address, &1_000, &order_ref);
+        client.create_order(&4, &buyer, &seller, &token_address, &10_000_000, &order_ref);
 
         client.cancel_unfunded(&4);
         let order = client.get_order(&4);
@@ -574,7 +579,7 @@ mod tests {
         let (env, client, buyer, seller, token_address, _) = setup_test();
 
         let order_ref = String::from_str(&env, "ORD-FW26-005");
-        client.create_order(&5, &buyer, &seller, &token_address, &1_000, &order_ref);
+        client.create_order(&5, &buyer, &seller, &token_address, &10_000_000, &order_ref);
 
         let res = client.try_release_funds(&5);
         assert_eq!(res, Err(Ok(EscrowError::InvalidState)));
@@ -584,19 +589,32 @@ mod tests {
     fn test_invalid_parameters_rejected() {
         let (env, client, buyer, seller, token_address, _) = setup_test();
 
-        let order_ref = String::from_str(&env, "ORD-FW26-006");
+        let empty_ref = String::from_str(&env, "");
+        let valid_ref = String::from_str(&env, "VALID");
 
-        // Amount <= 0
-        let res1 = client.try_create_order(&6, &buyer, &seller, &token_address, &0, &order_ref);
+        // Amount <= 0 -> InvalidAmount
+        let res1 = client.try_create_order(&6, &buyer, &seller, &token_address, &0, &valid_ref);
         assert_eq!(res1, Err(Ok(EscrowError::InvalidAmount)));
 
-        // Same buyer and seller
-        let res2 = client.try_create_order(&7, &buyer, &buyer, &token_address, &100, &order_ref);
-        assert_eq!(res2, Err(Ok(EscrowError::SameBuyerSeller)));
+        // Amount < MIN_ESCROW_AMOUNT -> BelowMinimumEscrow
+        let res2 = client.try_create_order(&7, &buyer, &seller, &token_address, &5_000_000, &valid_ref);
+        assert_eq!(res2, Err(Ok(EscrowError::BelowMinimumEscrow)));
 
-        // Empty ref
-        let empty_ref = String::from_str(&env, "");
-        let res3 = client.try_create_order(&8, &buyer, &seller, &token_address, &100, &empty_ref);
-        assert_eq!(res3, Err(Ok(EscrowError::InvalidOrderRef)));
+        // Same buyer and seller -> SameBuyerSeller
+        let res3 = client.try_create_order(&8, &buyer, &buyer, &token_address, &10_000_000, &valid_ref);
+        assert_eq!(res3, Err(Ok(EscrowError::SameBuyerSeller)));
+
+        // Empty ref -> InvalidOrderRef
+        let res4 = client.try_create_order(&9, &buyer, &seller, &token_address, &10_000_000, &empty_ref);
+        assert_eq!(res4, Err(Ok(EscrowError::InvalidOrderRef)));
+    }
+
+    #[test]
+    fn test_bps_split_and_dust_conservation() {
+        let (_env, _client, _, _, _, _) = setup_test();
+
+        let total = 100_000_003i128; // Uneven amount to test integer dust remainder
+        let (primary, secondary) = FashionEscrowContract::split_with_dust(total, 7_000, 3_000).unwrap();
+        assert_eq!(primary + secondary, total); // Exact conservation invariant!
     }
 }

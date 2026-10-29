@@ -47,6 +47,9 @@ const TOPIC_DESIGNER: Symbol = symbol_short!("designer");
 const EVT_REGISTERED: Symbol = symbol_short!("reg");
 const EVT_UPDATED: Symbol = symbol_short!("updated");
 
+const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
+const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
+
 #[contract]
 pub struct DesignerRegistryContract;
 
@@ -87,6 +90,7 @@ impl DesignerRegistryContract {
         };
 
         env.storage().persistent().set(&designer, &record);
+        env.storage().persistent().extend_ttl(&designer, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         // Emit registration event: topic: (designer, reg), data: (designer, brand_name, metadata_uri)
         env.events().publish(
@@ -125,6 +129,7 @@ impl DesignerRegistryContract {
         record.metadata_uri = metadata_uri.clone();
 
         env.storage().persistent().set(&designer, &record);
+        env.storage().persistent().extend_ttl(&designer, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         // Emit update event: topic: (designer, updated), data: (designer, brand_name, metadata_uri)
         env.events().publish(

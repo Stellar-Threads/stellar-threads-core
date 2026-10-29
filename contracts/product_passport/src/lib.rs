@@ -470,7 +470,7 @@ mod tests {
         client.create_passport(&creator, &product_id, &brand, &item, &uri, &hash, &1);
 
         // Verify physical twin
-        assert!(client.verify_physical_twin(&product_id, &hash).unwrap());
+        assert!(client.verify_physical_twin(&product_id, &hash));
 
         // Mark recycled (state 4)
         client.mark_circular_state(&product_id, &creator, &4);

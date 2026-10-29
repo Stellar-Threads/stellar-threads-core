@@ -742,7 +742,7 @@ mod tests {
         // Arbitrator splits 60% refund to buyer (30M), 40% payout to seller (20M)
         client.resolve_dispute(&20, &arbitrator, &6_000);
 
-        assert!(client.is_order_settled(&20).unwrap());
+        assert!(client.is_order_settled(&20));
     }
 
     #[test]

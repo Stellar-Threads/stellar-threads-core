@@ -578,6 +578,45 @@ impl ProductionFinancingContract {
         Ok(tranche_amount)
     }
 
+    /// Transfer repayment claim right to a secondary investor
+    pub fn transfer_claim_right(
+        env: Env,
+        from: Address,
+        to: Address,
+        proposal_id: String,
+        transfer_amount: i128,
+    ) -> Result<(), FinancingError> {
+        from.require_auth();
+
+        if transfer_amount <= 0 {
+            return Err(FinancingError::InvalidAmount);
+        }
+
+        let from_key = DataKey::Contribution(proposal_id.clone(), from.clone());
+        let from_contrib: i128 = env
+            .storage()
+            .persistent()
+            .get(&from_key)
+            .ok_or(FinancingError::NothingToClaim)?;
+
+        if from_contrib < transfer_amount {
+            return Err(FinancingError::InvalidAmount);
+        }
+
+        let to_key = DataKey::Contribution(proposal_id.clone(), to.clone());
+        let to_contrib: i128 = env.storage().persistent().get(&to_key).unwrap_or(0);
+
+        env.storage().persistent().set(&from_key, &(from_contrib - transfer_amount));
+        env.storage().persistent().set(&to_key, &(to_contrib + transfer_amount));
+
+        env.events().publish(
+            (TOPIC_FINANCING, symbol_short!("claimxfr")),
+            (proposal_id, from, to, transfer_amount),
+        );
+
+        Ok(())
+    }
+
     /// Read proposal details
     pub fn get_proposal(env: Env, proposal_id: String) -> Result<FinancingProposal, FinancingError> {
         let key = DataKey::Proposal(proposal_id);

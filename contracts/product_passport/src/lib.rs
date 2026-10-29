@@ -451,4 +451,34 @@ mod tests {
         let record = client.get_passport(&product_id);
         assert_eq!(record.status, 3);
     }
+
+    #[test]
+    fn test_circular_state_and_physical_twin() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let contract_id = env.register(ProductPassportContract, ());
+        let client = ProductPassportContractClient::new(&env, &contract_id);
+
+        let creator = Address::generate(&env);
+        let product_id = String::from_str(&env, "ST-CIRCULAR-01");
+        let brand = String::from_str(&env, "EcoWeave");
+        let item = String::from_str(&env, "Recycled Wool Coat");
+        let uri = String::from_str(&env, "ipfs://circular");
+        let hash = String::from_str(&env, "chip-hash-12345");
+
+        client.create_passport(&creator, &product_id, &brand, &item, &uri, &hash, &1);
+
+        // Verify physical twin
+        assert!(client.verify_physical_twin(&product_id, &hash).unwrap());
+
+        // Mark recycled (state 4)
+        client.mark_circular_state(&product_id, &creator, &4);
+        let record = client.get_passport(&product_id);
+        assert_eq!(record.status, 4);
+
+        // Check royalty
+        assert_eq!(client.get_royalty_bps(&product_id), 500);
+    }
+
 }

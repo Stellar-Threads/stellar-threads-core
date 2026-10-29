@@ -538,6 +538,16 @@ impl FashionEscrowContract {
         Ok(())
     }
 
+    /// Check if order is fully settled
+    pub fn is_order_settled(env: Env, order_id: u64) -> Result<bool, EscrowError> {
+        let order: EscrowOrder = env
+            .storage()
+            .persistent()
+            .get(&order_id)
+            .ok_or(EscrowError::NotFound)?;
+        Ok(order.state == EscrowState::Released || order.state == EscrowState::Refunded || order.state == EscrowState::Cancelled)
+    }
+
     /// Read an escrow order by ID
     pub fn get_order(env: Env, order_id: u64) -> Result<EscrowOrder, EscrowError> {
         env.storage()

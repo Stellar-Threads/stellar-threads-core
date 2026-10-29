@@ -377,4 +377,36 @@ mod tests {
         let res = client.try_register_designer(&designer, &empty_brand, &atelier, &uri);
         assert_eq!(res, Err(Ok(RegistryError::InvalidBrandName)));
     }
+
+    #[test]
+    fn test_tier_and_sustainability_updates() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let contract_id = env.register(DesignerRegistryContract, ());
+        let client = DesignerRegistryContractClient::new(&env, &contract_id);
+
+        let designer = Address::generate(&env);
+        let brand = String::from_str(&env, "EcoAtelier");
+        let atelier = String::from_str(&env, "Berlin, Germany");
+        let uri = String::from_str(&env, "ipfs://eco");
+
+        client.register_designer(&designer, &brand, &atelier, &uri);
+
+        // Upgrade tier
+        client.update_tier(&designer, &DesignerTier::HauteCouture);
+        let record = client.get_designer(&designer);
+        assert_eq!(record.tier, DesignerTier::HauteCouture);
+
+        // Update ESG
+        let cert = String::from_str(&env, "GOTS-CERT-998");
+        client.update_sustainability(&designer, &95, &cert);
+        let updated = client.get_designer(&designer);
+        assert_eq!(updated.sustainability_score, 95);
+
+        // Fulfillment count
+        let count = client.record_fulfillment(&designer);
+        assert_eq!(count, 1);
+    }
+
 }

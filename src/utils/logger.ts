@@ -7,6 +7,11 @@ export interface LogEntry {
   context?: Record<string, unknown>;
 }
 
+// Structured logging with ISO timestamps and level metadata
+export interface LogContext {
+  [key: string]: unknown;
+}
+
 export const logger = {
   log(level: LogLevel, message: string, context?: Record<string, unknown>): void {
     const entry: LogEntry = {

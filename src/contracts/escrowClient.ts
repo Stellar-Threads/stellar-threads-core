@@ -215,4 +215,20 @@ export class FashionEscrowClient {
     const prepared = await this.server.prepareTransaction(tx);
     return prepared.toXDR();
   }
+
+  public async getOrderSettledStatus(orderId: number): Promise<boolean> {
+    try {
+      const order = await this.getOrder(orderId);
+      return order.state === 'Released' || order.state === 'Refunded' || order.state === 'Cancelled';
+    } catch {
+      return false;
+    }
+  }
+
+  public calculateBpsSplit(totalStroops: bigint, payeeBps: number, secondaryBps: number): { payee: bigint; secondary: bigint } {
+    const secondary = (totalStroops * BigInt(secondaryBps)) / 10000n;
+    const payee = totalStroops - secondary;
+    return { payee, secondary };
+  }
+
 }

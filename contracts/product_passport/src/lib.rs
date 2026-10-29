@@ -35,6 +35,7 @@ pub struct ProductPassportRecord {
     pub created_at: u64,
     pub origin_country: String,
     pub material_composition: String,
+    pub royalty_bps: u32, // Designer secondary royalty basis points (e.g. 500 = 5%)
 }
 
 const TOPIC_PASSPORT: Symbol = symbol_short!("passport");
@@ -94,6 +95,7 @@ impl ProductPassportContract {
             created_at: now,
             origin_country: String::from_str(&env, "FR"),
             material_composition: String::from_str(&env, "100% Organic Silk"),
+            royalty_bps: 500,
         };
 
         env.storage().persistent().set(&product_id, &record);
@@ -129,6 +131,16 @@ impl ProductPassportContract {
         env.storage().persistent().extend_ttl(&product_id, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
 
         Ok(())
+    }
+
+    /// Query secondary market creator royalty basis points (e.g. 500 = 5%)
+    pub fn get_royalty_bps(env: Env, product_id: String) -> Result<u32, PassportError> {
+        let record: ProductPassportRecord = env
+            .storage()
+            .persistent()
+            .get(&product_id)
+            .ok_or(PassportError::NotFound)?;
+        Ok(record.royalty_bps)
     }
 
     /// Read digital product passport details

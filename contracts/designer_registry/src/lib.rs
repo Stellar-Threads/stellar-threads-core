@@ -41,6 +41,7 @@ pub struct DesignerRecord {
     pub tier: DesignerTier,
     pub sustainability_score: u32,
     pub cert_hash: String,
+    pub fulfilled_orders: u32,
 }
 
 const TOPIC_DESIGNER: Symbol = symbol_short!("designer");
@@ -89,6 +90,7 @@ impl DesignerRegistryContract {
             tier: DesignerTier::Emerging,
             sustainability_score: 50,
             cert_hash: String::from_str(&env, "UNVERIFIED"),
+            fulfilled_orders: 0,
         };
 
         env.storage().persistent().set(&designer, &record);
@@ -211,6 +213,22 @@ impl DesignerRegistryContract {
     /// Query required verification stake bond
     pub fn get_verification_bond(env: Env) -> i128 {
         env.storage().instance().get(&KEY_BOND).unwrap_or(0)
+    }
+
+    /// Increment fulfilled orders counter upon successful escrow release
+    pub fn record_fulfillment(env: Env, designer: Address) -> Result<u32, RegistryError> {
+        let mut record: DesignerRecord = env
+            .storage()
+            .persistent()
+            .get(&designer)
+            .ok_or(RegistryError::NotFound)?;
+
+        record.fulfilled_orders += 1;
+        let count = record.fulfilled_orders;
+        env.storage().persistent().set(&designer, &record);
+        env.storage().persistent().extend_ttl(&designer, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+
+        Ok(count)
     }
 
     /// Retrieve designer record by address

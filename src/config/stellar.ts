@@ -41,3 +41,16 @@ export function getNetworkConfig(): StellarNetworkConfig {
     rpcUrl: envRpc || STELLAR_TESTNET_CONFIG.rpcUrl,
   };
 }
+
+/**
+ * Redundant Soroban RPC fallback pool to safeguard backend against RPC downtime
+ */
+export const SOROBAN_RPC_FALLBACK_POOL: string[] = [
+  'https://soroban-testnet.stellar.org',
+  'https://rpc-testnet.stellar.org',
+  'https://testnet.sorobanrpc.com',
+];
+
+export function getActiveRpcUrl(): string {
+  return process.env.STELLAR_RPC_URL || SOROBAN_RPC_FALLBACK_POOL[0];
+}

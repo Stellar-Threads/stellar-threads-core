@@ -49,6 +49,7 @@ const EVT_UPDATED: Symbol = symbol_short!("updated");
 
 const PERSISTENT_BUMP_AMOUNT: u32 = 3_110_400;
 const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
+const KEY_COUNT: Symbol = symbol_short!("count");
 
 #[contract]
 pub struct DesignerRegistryContract;
@@ -91,6 +92,9 @@ impl DesignerRegistryContract {
 
         env.storage().persistent().set(&designer, &record);
         env.storage().persistent().extend_ttl(&designer, PERSISTENT_LIFETIME_THRESHOLD, PERSISTENT_BUMP_AMOUNT);
+
+        let count: u32 = env.storage().instance().get(&KEY_COUNT).unwrap_or(0);
+        env.storage().instance().set(&KEY_COUNT, &(count + 1));
 
         // Emit registration event: topic: (designer, reg), data: (designer, brand_name, metadata_uri)
         env.events().publish(
@@ -190,6 +194,11 @@ impl DesignerRegistryContract {
         );
 
         Ok(())
+    }
+
+    /// Return total registered designer count
+    pub fn get_total_designers(env: Env) -> u32 {
+        env.storage().instance().get(&KEY_COUNT).unwrap_or(0)
     }
 
     /// Retrieve designer record by address

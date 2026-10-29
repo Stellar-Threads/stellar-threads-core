@@ -14,6 +14,10 @@ pub enum PassportError {
     InvalidMetadata = 5,
     InvalidIntegrityHash = 6,
     InvalidEdition = 7,
+    PassportRetired = 8,
+    IntegrityMismatch = 9,
+    BatchLimitExceeded = 10,
+    UnauthorizedTransfer = 11,
 }
 
 #[contracttype]

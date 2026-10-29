@@ -107,4 +107,9 @@ export class ProductionFinancingClient {
     }
     return Boolean(scValToNative(sim.result.retval));
   }
+
+  public calculateFactoringRoi(principalStroops: bigint, yieldBps: number, durationDays: number): bigint {
+    return (principalStroops * BigInt(yieldBps) * BigInt(durationDays)) / (10000n * 365n);
+  }
+
 }

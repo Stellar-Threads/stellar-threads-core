@@ -10,7 +10,7 @@
 [![Contracts 100% Passing](https://img.shields.io/badge/Soroban%20Tests-29%2F29%20Passing-emerald?style=flat-square)](contracts/)
 [![Backend Tests 100% Passing](https://img.shields.io/badge/Vitest%20Suites-68%2F68%20Passing-emerald?style=flat-square)](src/tests/)
 [![Solvency](https://img.shields.io/badge/Proof--of--Reserve-100%25%20Solvent-blue?style=flat-square)](docs/SOLVENCY.md)
-[![Live dApp](https://img.shields.io/badge/Frontend-stellar--threads.netlify.app-00c7b7?style=flat-square&logo=netlify)](https://stellar-threads.netlify.app)
+[![Live dApp](https://img.shields.io/badge/Frontend-stellar--threads--app.netlify.app-00c7b7?style=flat-square&logo=netlify)](https://stellar-threads-app.netlify.app)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
 
 </div>

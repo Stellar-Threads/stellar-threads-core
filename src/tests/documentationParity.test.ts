@@ -11,6 +11,7 @@ describe('Documentation Parity & Integrity Tests', () => {
       'docs/HACKATHON_SUBMISSION_STORY.md',
       'docs/PITCH_DECK_SLIDES.md',
       'docs/RELEASE_NOTES_v1.0.0.md',
+      'docs/SOLVENCY.md',
     ];
 
     docs.forEach(d => {

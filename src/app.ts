@@ -14,12 +14,17 @@ import escrowRouter from './routes/escrow';
 import indexerRouter from './routes/indexer';
 import { financingRouter } from './routes/financing';
 import { logger } from './utils/logger';
+import { createRateLimiter } from './utils/rateLimiter';
 
 export function createApp(): express.Application {
   const app = express();
 
+  // Trust upstream reverse proxies
+  app.set('trust proxy', 1);
+
   // Security and middleware
   app.use(helmet());
+  app.use(createRateLimiter(600, 60000));
   app.use(
     cors({
       origin: '*', // Allow frontend client requests

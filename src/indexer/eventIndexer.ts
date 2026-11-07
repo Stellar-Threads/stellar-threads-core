@@ -77,10 +77,11 @@ export class SorobanEventIndexer {
 
   public async poll(): Promise<void> {
     const manifest = getContractsManifest();
-    const contractMap: Record<string, 'designer_registry' | 'product_passport' | 'fashion_escrow'> = {
+    const contractMap: Record<string, 'designer_registry' | 'product_passport' | 'fashion_escrow' | 'production_financing'> = {
       [manifest.contracts.designer_registry.address]: 'designer_registry',
       [manifest.contracts.product_passport.address]: 'product_passport',
       [manifest.contracts.fashion_escrow.address]: 'fashion_escrow',
+      [manifest.contracts.production_financing.address]: 'production_financing',
     };
 
     const contractIds = Object.keys(contractMap).filter(Boolean);
@@ -144,7 +145,7 @@ export class SorobanEventIndexer {
 
   private parseEvent(
     raw: any,
-    contractMap: Record<string, 'designer_registry' | 'product_passport' | 'fashion_escrow'>
+    contractMap: Record<string, 'designer_registry' | 'product_passport' | 'fashion_escrow' | 'production_financing'>
   ): StoredContractEvent | null {
     try {
       const contractId = raw.contractId;
@@ -183,6 +184,8 @@ export class SorobanEventIndexer {
         eventType = topic1 === 'created' ? 'passport_created' : (topic1 === 'transf' ? 'passport_transferred' : 'passport_status_updated');
       } else if (topic0 === 'escrow' || contractName === 'fashion_escrow') {
         eventType = topic1 === 'created' ? 'escrow_created' : (topic1 === 'funded' ? 'escrow_funded' : (topic1 === 'release' ? 'escrow_released' : (topic1 === 'refund' ? 'escrow_refunded' : 'escrow_cancelled')));
+      } else if (topic0 === 'financing' || contractName === 'production_financing') {
+        eventType = topic1 === 'created' ? 'financing_created' : (topic1 === 'contrib' ? 'financing_contributed' : (topic1 === 'released' ? 'financing_released' : (topic1 === 'repaid' ? 'financing_repaid' : (topic1 === 'tranche' ? 'financing_tranche' : 'financing_event'))));
       }
 
       const stored: StoredContractEvent = {

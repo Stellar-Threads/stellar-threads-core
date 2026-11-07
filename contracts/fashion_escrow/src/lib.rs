@@ -89,6 +89,7 @@ const PERSISTENT_LIFETIME_THRESHOLD: u32 = 100_000;
 const KEY_PAUSED: Symbol = symbol_short!("paused");
 const KEY_ADMIN: Symbol = symbol_short!("admin");
 const KEY_LOCKED: Symbol = symbol_short!("locked");
+const KEY_ARBITRATOR: Symbol = symbol_short!("arbitr");
 /// Minimum escrow amount: 10,000,000 Stroops (1.0 XLM / SAC USDC)
 const MIN_ESCROW_AMOUNT: i128 = 10_000_000;
 
@@ -107,6 +108,9 @@ impl FashionEscrowContract {
         amount: i128,
         order_ref: String,
     ) -> Result<(), EscrowError> {
+        if Self::is_paused(env.clone()) {
+            return Err(EscrowError::ContractPaused);
+        }
         buyer.require_auth();
 
         if amount <= 0 {
@@ -118,7 +122,7 @@ impl FashionEscrowContract {
         if buyer == seller {
             return Err(EscrowError::SameBuyerSeller);
         }
-        if order_ref.len() == 0 {
+        if order_ref.is_empty() {
             return Err(EscrowError::InvalidOrderRef);
         }
         if env.storage().persistent().has(&order_id) {
@@ -157,6 +161,9 @@ impl FashionEscrowContract {
 
     /// Deposit agreed payment into contract-controlled escrow
     pub fn fund_order(env: Env, order_id: u64) -> Result<(), EscrowError> {
+        if Self::is_paused(env.clone()) {
+            return Err(EscrowError::ContractPaused);
+        }
         let mut order: EscrowOrder = env
             .storage()
             .persistent()
@@ -195,6 +202,9 @@ impl FashionEscrowContract {
 
     /// Buyer verifies garment delivery and releases escrowed funds to the atelier / manufacturer
     pub fn release_funds(env: Env, order_id: u64) -> Result<(), EscrowError> {
+        if Self::is_paused(env.clone()) {
+            return Err(EscrowError::ContractPaused);
+        }
         let mut order: EscrowOrder = env
             .storage()
             .persistent()
@@ -232,6 +242,9 @@ impl FashionEscrowContract {
 
     /// Seller approves refund or cancels production order, returning tokens to buyer
     pub fn refund_funds(env: Env, order_id: u64) -> Result<(), EscrowError> {
+        if Self::is_paused(env.clone()) {
+            return Err(EscrowError::ContractPaused);
+        }
         let mut order: EscrowOrder = env
             .storage()
             .persistent()
@@ -265,6 +278,9 @@ impl FashionEscrowContract {
 
     /// Cancel order before funding has occurred
     pub fn cancel_unfunded(env: Env, order_id: u64) -> Result<(), EscrowError> {
+        if Self::is_paused(env.clone()) {
+            return Err(EscrowError::ContractPaused);
+        }
         let mut order: EscrowOrder = env
             .storage()
             .persistent()
@@ -325,6 +341,9 @@ impl FashionEscrowContract {
         order_id: u64,
         next_status: MilestoneStatus,
     ) -> Result<(), EscrowError> {
+        if Self::is_paused(env.clone()) {
+            return Err(EscrowError::ContractPaused);
+        }
         let order: EscrowOrder = env
             .storage()
             .persistent()
@@ -358,6 +377,9 @@ impl FashionEscrowContract {
         inspector: Address,
         verdict: u32,
     ) -> Result<(), EscrowError> {
+        if Self::is_paused(env.clone()) {
+            return Err(EscrowError::ContractPaused);
+        }
         inspector.require_auth();
 
         let order: EscrowOrder = env
@@ -394,6 +416,9 @@ impl FashionEscrowContract {
         order_id: u64,
         timeout_threshold_secs: u64,
     ) -> Result<(), EscrowError> {
+        if Self::is_paused(env.clone()) {
+            return Err(EscrowError::ContractPaused);
+        }
         let mut order: EscrowOrder = env
             .storage()
             .persistent()
@@ -442,6 +467,32 @@ impl FashionEscrowContract {
         Ok(())
     }
 
+    /// Set designated certified dispute arbitrator
+    pub fn set_arbitrator(
+        env: Env,
+        admin: Address,
+        arbitrator: Address,
+    ) -> Result<(), EscrowError> {
+        admin.require_auth();
+        let stored_admin: Address = env
+            .storage()
+            .instance()
+            .get(&KEY_ADMIN)
+            .ok_or(EscrowError::Unauthorized)?;
+
+        if admin != stored_admin {
+            return Err(EscrowError::Unauthorized);
+        }
+
+        env.storage().instance().set(&KEY_ARBITRATOR, &arbitrator);
+        Ok(())
+    }
+
+    /// Query designated arbitrator
+    pub fn get_arbitrator(env: Env) -> Option<Address> {
+        env.storage().instance().get(&KEY_ARBITRATOR)
+    }
+
     /// Emergency pause killswitch
     pub fn set_paused(env: Env, admin: Address, paused: bool) -> Result<(), EscrowError> {
         admin.require_auth();
@@ -479,7 +530,24 @@ impl FashionEscrowContract {
         arbitrator: Address,
         buyer_refund_bps: u32,
     ) -> Result<(), EscrowError> {
+        if Self::is_paused(env.clone()) {
+            return Err(EscrowError::ContractPaused);
+        }
         arbitrator.require_auth();
+
+        let admin_opt: Option<Address> = env.storage().instance().get(&KEY_ADMIN);
+        let arb_opt: Option<Address> = env.storage().instance().get(&KEY_ARBITRATOR);
+        if let Some(admin) = admin_opt {
+            let is_authorized =
+                admin == arbitrator || arb_opt.map(|a| a == arbitrator).unwrap_or(false);
+            if !is_authorized {
+                return Err(EscrowError::Unauthorized);
+            }
+        } else if let Some(arb) = arb_opt {
+            if arb != arbitrator {
+                return Err(EscrowError::Unauthorized);
+            }
+        }
 
         if buyer_refund_bps > 10_000 {
             return Err(EscrowError::InvalidBasisPoints);
@@ -533,6 +601,9 @@ impl FashionEscrowContract {
         order_id: u64,
         release_amount: i128,
     ) -> Result<(), EscrowError> {
+        if Self::is_paused(env.clone()) {
+            return Err(EscrowError::ContractPaused);
+        }
         let mut order: EscrowOrder = env
             .storage()
             .persistent()
@@ -793,6 +864,9 @@ mod tests {
     fn test_dispute_resolution_and_partial_settlement() {
         let (env, client, buyer, seller, token_address, _) = setup_test();
 
+        let admin = Address::generate(&env);
+        client.initialize_admin(&admin);
+
         let order_ref = String::from_str(&env, "ORD-DISPUTE-01");
         client.create_order(
             &20,
@@ -805,10 +879,77 @@ mod tests {
         client.fund_order(&20);
 
         let arbitrator = Address::generate(&env);
+        client.set_arbitrator(&admin, &arbitrator);
         // Arbitrator splits 60% refund to buyer (30M), 40% payout to seller (20M)
         client.resolve_dispute(&20, &arbitrator, &6_000);
 
         assert!(client.is_order_settled(&20));
+    }
+
+    #[test]
+    fn test_unauthorized_arbitrator_rejected() {
+        let (env, client, buyer, seller, token_address, _) = setup_test();
+
+        let admin = Address::generate(&env);
+        client.initialize_admin(&admin);
+
+        let order_ref = String::from_str(&env, "ORD-UNAUTH-ARB");
+        client.create_order(
+            &21,
+            &buyer,
+            &seller,
+            &token_address,
+            &50_000_000,
+            &order_ref,
+        );
+        client.fund_order(&21);
+
+        let unauthorized_arb = Address::generate(&env);
+        let res = client.try_resolve_dispute(&21, &unauthorized_arb, &5_000);
+        assert_eq!(res, Err(Ok(EscrowError::Unauthorized)));
+    }
+
+    #[test]
+    fn test_emergency_pause_circuit_breaker() {
+        let (env, client, buyer, seller, token_address, _) = setup_test();
+
+        let admin = Address::generate(&env);
+        client.initialize_admin(&admin);
+
+        let order_ref = String::from_str(&env, "ORD-PAUSE-01");
+        client.create_order(
+            &22,
+            &buyer,
+            &seller,
+            &token_address,
+            &20_000_000,
+            &order_ref,
+        );
+
+        // Pause contract
+        client.set_paused(&admin, &true);
+        assert!(client.is_paused());
+
+        // Operations blocked while paused
+        let res_fund = client.try_fund_order(&22);
+        assert_eq!(res_fund, Err(Ok(EscrowError::ContractPaused)));
+
+        let res_create = client.try_create_order(
+            &23,
+            &buyer,
+            &seller,
+            &token_address,
+            &20_000_000,
+            &order_ref,
+        );
+        assert_eq!(res_create, Err(Ok(EscrowError::ContractPaused)));
+
+        // Unpause resumes operations
+        client.set_paused(&admin, &false);
+        assert!(!client.is_paused());
+        client.fund_order(&22);
+        let order = client.get_order(&22);
+        assert_eq!(order.state, EscrowState::Funded);
     }
 
     #[test]

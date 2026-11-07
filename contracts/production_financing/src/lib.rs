@@ -1,4 +1,5 @@
 #![no_std]
+#![allow(clippy::too_many_arguments)]
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype, symbol_short, token, Address, Env, String,
     Symbol,
@@ -66,6 +67,7 @@ pub enum DataKey {
     Proposal(String),
     Contribution(String, Address),
     RepaymentClaimed(String, Address),
+    Disbursed(String),
 }
 
 const TOPIC_FINANCING: Symbol = symbol_short!("financing");
@@ -102,6 +104,9 @@ impl ProductionFinancingContract {
         purpose: String,
         metadata_uri: String,
     ) -> Result<(), FinancingError> {
+        if Self::is_paused(env.clone()) {
+            return Err(FinancingError::ContractPaused);
+        }
         applicant.require_auth();
 
         if target_amount <= 0 {
@@ -116,7 +121,7 @@ impl ProductionFinancingContract {
         if deadline <= env.ledger().timestamp() {
             return Err(FinancingError::InvalidDeadline);
         }
-        if proposal_id.len() == 0 {
+        if proposal_id.is_empty() {
             return Err(FinancingError::InvalidAmount);
         }
 
@@ -164,6 +169,9 @@ impl ProductionFinancingContract {
         proposal_id: String,
         amount: i128,
     ) -> Result<(), FinancingError> {
+        if Self::is_paused(env.clone()) {
+            return Err(FinancingError::ContractPaused);
+        }
         contributor.require_auth();
 
         if amount < MIN_CONTRIBUTION {
@@ -226,6 +234,9 @@ impl ProductionFinancingContract {
         caller: Address,
         proposal_id: String,
     ) -> Result<(), FinancingError> {
+        if Self::is_paused(env.clone()) {
+            return Err(FinancingError::ContractPaused);
+        }
         caller.require_auth();
 
         let p_key = DataKey::Proposal(proposal_id.clone());
@@ -239,9 +250,7 @@ impl ProductionFinancingContract {
             return Err(FinancingError::Unauthorized);
         }
 
-        if proposal.status == ProposalStatus::ProductionActive
-            || proposal.status == ProposalStatus::Repaid
-        {
+        if proposal.status == ProposalStatus::Repaid {
             return Err(FinancingError::AlreadyReleased);
         }
 
@@ -250,7 +259,13 @@ impl ProductionFinancingContract {
             return Err(FinancingError::ThresholdNotMet);
         }
 
-        let payout = proposal.current_funded;
+        let d_key = DataKey::Disbursed(proposal_id.clone());
+        let already_disbursed: i128 = env.storage().persistent().get(&d_key).unwrap_or(0);
+        let payout = proposal.current_funded - already_disbursed;
+        if payout <= 0 {
+            return Err(FinancingError::AlreadyReleased);
+        }
+
         let token_client = token::Client::new(&env, &proposal.token);
         token_client.transfer(
             &env.current_contract_address(),
@@ -258,6 +273,9 @@ impl ProductionFinancingContract {
             &payout,
         );
 
+        env.storage()
+            .persistent()
+            .set(&d_key, &proposal.current_funded);
         proposal.status = ProposalStatus::ProductionActive;
         env.storage().persistent().set(&p_key, &proposal);
 
@@ -276,6 +294,9 @@ impl ProductionFinancingContract {
         proposal_id: String,
         amount: i128,
     ) -> Result<(), FinancingError> {
+        if Self::is_paused(env.clone()) {
+            return Err(FinancingError::ContractPaused);
+        }
         payer.require_auth();
 
         if amount <= 0 {
@@ -318,6 +339,9 @@ impl ProductionFinancingContract {
         contributor: Address,
         proposal_id: String,
     ) -> Result<i128, FinancingError> {
+        if Self::is_paused(env.clone()) {
+            return Err(FinancingError::ContractPaused);
+        }
         contributor.require_auth();
 
         let p_key = DataKey::Proposal(proposal_id.clone());
@@ -370,6 +394,9 @@ impl ProductionFinancingContract {
         contributor: Address,
         proposal_id: String,
     ) -> Result<i128, FinancingError> {
+        if Self::is_paused(env.clone()) {
+            return Err(FinancingError::ContractPaused);
+        }
         contributor.require_auth();
 
         let p_key = DataKey::Proposal(proposal_id.clone());
@@ -437,6 +464,9 @@ impl ProductionFinancingContract {
         contributor: Address,
         proposal_id: String,
     ) -> Result<i128, FinancingError> {
+        if Self::is_paused(env.clone()) {
+            return Err(FinancingError::ContractPaused);
+        }
         contributor.require_auth();
 
         let p_key = DataKey::Proposal(proposal_id.clone());
@@ -501,6 +531,9 @@ impl ProductionFinancingContract {
         proposal_id: String,
         passport_id: String,
     ) -> Result<(), FinancingError> {
+        if Self::is_paused(env.clone()) {
+            return Err(FinancingError::ContractPaused);
+        }
         applicant.require_auth();
 
         let p_key = DataKey::Proposal(proposal_id.clone());
@@ -563,6 +596,9 @@ impl ProductionFinancingContract {
         proposal_id: String,
         tranche_bps: u32,
     ) -> Result<i128, FinancingError> {
+        if Self::is_paused(env.clone()) {
+            return Err(FinancingError::ContractPaused);
+        }
         caller.require_auth();
 
         if tranche_bps > 10_000 || tranche_bps == 0 {
@@ -570,7 +606,7 @@ impl ProductionFinancingContract {
         }
 
         let p_key = DataKey::Proposal(proposal_id.clone());
-        let proposal: FinancingProposal = env
+        let mut proposal: FinancingProposal = env
             .storage()
             .persistent()
             .get(&p_key)
@@ -580,7 +616,35 @@ impl ProductionFinancingContract {
             return Err(FinancingError::Unauthorized);
         }
 
+        if proposal.current_funded < proposal.min_threshold {
+            return Err(FinancingError::ThresholdNotMet);
+        }
+
+        if proposal.status == ProposalStatus::Draft
+            || proposal.status == ProposalStatus::Cancelled
+            || proposal.status == ProposalStatus::ExpiredRefund
+        {
+            return Err(FinancingError::CampaignNotActive);
+        }
+
+        let d_key = DataKey::Disbursed(proposal_id.clone());
+        let already_disbursed: i128 = env.storage().persistent().get(&d_key).unwrap_or(0);
+
         let tranche_amount = (proposal.current_funded * (tranche_bps as i128)) / 10_000;
+        if tranche_amount <= 0 || already_disbursed + tranche_amount > proposal.current_funded {
+            return Err(FinancingError::InvalidAmount);
+        }
+
+        let new_disbursed = already_disbursed + tranche_amount;
+        env.storage().persistent().set(&d_key, &new_disbursed);
+
+        if proposal.status != ProposalStatus::ProductionActive
+            && proposal.status != ProposalStatus::Repaid
+        {
+            proposal.status = ProposalStatus::ProductionActive;
+            env.storage().persistent().set(&p_key, &proposal);
+        }
+
         let token_client = token::Client::new(&env, &proposal.token);
         token_client.transfer(
             &env.current_contract_address(),
@@ -604,6 +668,9 @@ impl ProductionFinancingContract {
         proposal_id: String,
         transfer_amount: i128,
     ) -> Result<(), FinancingError> {
+        if Self::is_paused(env.clone()) {
+            return Err(FinancingError::ContractPaused);
+        }
         from.require_auth();
 
         if transfer_amount <= 0 {
@@ -624,12 +691,30 @@ impl ProductionFinancingContract {
         let to_key = DataKey::Contribution(proposal_id.clone(), to.clone());
         let to_contrib: i128 = env.storage().persistent().get(&to_key).unwrap_or(0);
 
+        let from_cl_key = DataKey::RepaymentClaimed(proposal_id.clone(), from.clone());
+        let from_claimed: i128 = env.storage().persistent().get(&from_cl_key).unwrap_or(0);
+        let transferred_claimed = if from_contrib > 0 {
+            (from_claimed * transfer_amount) / from_contrib
+        } else {
+            0
+        };
+
+        let to_cl_key = DataKey::RepaymentClaimed(proposal_id.clone(), to.clone());
+        let to_claimed: i128 = env.storage().persistent().get(&to_cl_key).unwrap_or(0);
+
         env.storage()
             .persistent()
             .set(&from_key, &(from_contrib - transfer_amount));
         env.storage()
             .persistent()
             .set(&to_key, &(to_contrib + transfer_amount));
+
+        env.storage()
+            .persistent()
+            .set(&from_cl_key, &(from_claimed - transferred_claimed));
+        env.storage()
+            .persistent()
+            .set(&to_cl_key, &(to_claimed + transferred_claimed));
 
         env.events().publish(
             (TOPIC_FINANCING, symbol_short!("claimxfr")),
@@ -718,18 +803,18 @@ mod tests {
             &applicant,
             &proposal_id,
             &token_addr,
-            &50_000_0000000,
-            &30_000_0000000,
+            &500_000_000_000,
+            &300_000_000_000,
             &2_000,
-            &55_000_0000000,
+            &550_000_000_000,
             &purpose,
             &meta_uri,
         );
 
         assert!(client.has_proposal(&proposal_id));
         let p = client.get_proposal(&proposal_id);
-        assert_eq!(p.target_amount, 50_000_0000000);
-        assert_eq!(p.min_threshold, 30_000_0000000);
+        assert_eq!(p.target_amount, 500_000_000_000);
+        assert_eq!(p.min_threshold, 300_000_000_000);
         assert_eq!(p.current_funded, 0);
         assert_eq!(p.status, ProposalStatus::FundingActive);
     }
@@ -748,7 +833,7 @@ mod tests {
         let admin = Address::generate(&env);
         let (token_addr, token_admin) = create_test_token(&env, &admin);
 
-        token_admin.mint(&contributor, &60_000_0000000);
+        token_admin.mint(&contributor, &600_000_000_000);
 
         let proposal_id = String::from_str(&env, "prop-denim-run");
         let purpose = String::from_str(&env, "Organic denim manufacturing run");
@@ -758,19 +843,19 @@ mod tests {
             &applicant,
             &proposal_id,
             &token_addr,
-            &50_000_0000000,
-            &25_000_0000000,
+            &500_000_000_000,
+            &250_000_000_000,
             &2_000,
-            &55_000_0000000,
+            &550_000_000_000,
             &purpose,
             &meta_uri,
         );
 
         // Contributor funds proposal
-        client.contribute_funds(&contributor, &proposal_id, &50_000_0000000);
+        client.contribute_funds(&contributor, &proposal_id, &500_000_000_000);
 
         let p = client.get_proposal(&proposal_id);
-        assert_eq!(p.current_funded, 50_000_0000000);
+        assert_eq!(p.current_funded, 500_000_000_000);
         assert_eq!(p.status, ProposalStatus::Funded);
 
         // Applicant releases funds
@@ -780,7 +865,7 @@ mod tests {
         assert_eq!(p_after.status, ProposalStatus::ProductionActive);
 
         let token_client = token::Client::new(&env, &token_addr);
-        assert_eq!(token_client.balance(&applicant), 50_000_0000000);
+        assert_eq!(token_client.balance(&applicant), 500_000_000_000);
     }
 
     #[test]
@@ -798,9 +883,9 @@ mod tests {
         let admin = Address::generate(&env);
         let (token_addr, token_admin) = create_test_token(&env, &admin);
 
-        token_admin.mint(&contributor_a, &60_000_0000000);
-        token_admin.mint(&contributor_b, &40_000_0000000);
-        token_admin.mint(&applicant, &120_000_0000000);
+        token_admin.mint(&contributor_a, &600_000_000_000);
+        token_admin.mint(&contributor_b, &400_000_000_000);
+        token_admin.mint(&applicant, &1_200_000_000_000);
 
         let proposal_id = String::from_str(&env, "prop-cashmere");
         let purpose = String::from_str(&env, "Knitwear cashmere yarn");
@@ -810,35 +895,35 @@ mod tests {
             &applicant,
             &proposal_id,
             &token_addr,
-            &100_000_0000000,
-            &50_000_0000000,
+            &1_000_000_000_000,
+            &500_000_000_000,
             &2_000,
-            &110_000_0000000, // 10% premium repayment
+            &1_100_000_000_000, // 10% premium repayment
             &purpose,
             &meta_uri,
         );
 
         // Contributor A contributes 60%
-        client.contribute_funds(&contributor_a, &proposal_id, &60_000_0000000);
+        client.contribute_funds(&contributor_a, &proposal_id, &600_000_000_000);
         // Contributor B contributes 40%
-        client.contribute_funds(&contributor_b, &proposal_id, &40_000_0000000);
+        client.contribute_funds(&contributor_b, &proposal_id, &400_000_000_000);
 
         // Release funds
         client.release_funds(&applicant, &proposal_id);
 
-        // Applicant makes full repayment of 110
-        client.make_repayment(&applicant, &proposal_id, &110_000_0000000);
+        // Applicant makes full repayment of 1100
+        client.make_repayment(&applicant, &proposal_id, &1_100_000_000_000);
 
         let p = client.get_proposal(&proposal_id);
         assert_eq!(p.status, ProposalStatus::Repaid);
 
-        // Contributor A claims share: 60% of 110 = 66
+        // Contributor A claims share: 60% of 1100 = 660
         let claimed_a = client.claim_repayment_share(&contributor_a, &proposal_id);
-        assert_eq!(claimed_a, 66_000_0000000);
+        assert_eq!(claimed_a, 660_000_000_000);
 
-        // Contributor B claims share: 40% of 110 = 44
+        // Contributor B claims share: 40% of 1100 = 440
         let claimed_b = client.claim_repayment_share(&contributor_b, &proposal_id);
-        assert_eq!(claimed_b, 44_000_0000000);
+        assert_eq!(claimed_b, 440_000_000_000);
     }
 
     #[test]
@@ -855,7 +940,7 @@ mod tests {
         let admin = Address::generate(&env);
         let (token_addr, token_admin) = create_test_token(&env, &admin);
 
-        token_admin.mint(&contributor, &20_000_0000000);
+        token_admin.mint(&contributor, &200_000_000_000);
 
         let proposal_id = String::from_str(&env, "prop-failed-run");
         let purpose = String::from_str(&env, "High threshold project");
@@ -865,26 +950,26 @@ mod tests {
             &applicant,
             &proposal_id,
             &token_addr,
-            &100_000_0000000,
-            &50_000_0000000, // min threshold is 50
-            &2_000,          // deadline at 2,000
-            &110_000_0000000,
+            &1_000_000_000_000,
+            &500_000_000_000, // min threshold is 500
+            &2_000,           // deadline at 2,000
+            &1_100_000_000_000,
             &purpose,
             &meta_uri,
         );
 
-        // Contributes only 20 (under 50 threshold)
-        client.contribute_funds(&contributor, &proposal_id, &20_000_0000000);
+        // Contributes only 200 (under 500 threshold)
+        client.contribute_funds(&contributor, &proposal_id, &200_000_000_000);
 
         // Fast forward ledger past deadline
         env.ledger().set_timestamp(2_500);
 
         // Contributor requests refund
         let refunded = client.refund_unsuccessful(&contributor, &proposal_id);
-        assert_eq!(refunded, 20_000_0000000);
+        assert_eq!(refunded, 200_000_000_000);
 
         let token_client = token::Client::new(&env, &token_addr);
-        assert_eq!(token_client.balance(&contributor), 20_000_0000000);
+        assert_eq!(token_client.balance(&contributor), 200_000_000_000);
     }
 
     #[test]
@@ -908,10 +993,10 @@ mod tests {
             &applicant,
             &proposal_id,
             &token_addr,
-            &100_000_000_0000000,
-            &50_000_000_0000000,
+            &100_000_000_000_000,
+            &50_000_000_000_000,
             &2_000,
-            &110_000_000_0000000,
+            &110_000_000_000_000,
             &purpose,
             &meta_uri,
         );
@@ -921,10 +1006,10 @@ mod tests {
             &applicant,
             &proposal_id,
             &token_addr,
-            &100_000_000_0000000,
-            &50_000_000_0000000,
+            &100_000_000_000_000,
+            &50_000_000_000_000,
             &2_000,
-            &110_000_000_0000000,
+            &110_000_000_000_000,
             &purpose,
             &meta_uri,
         );
@@ -949,5 +1034,92 @@ mod tests {
         let penalty =
             ProductionFinancingContract::calculate_default_penalty(100_000_000, 500).unwrap();
         assert_eq!(penalty, 5_000_000); // 5% penalty
+    }
+
+    #[test]
+    fn test_tranche_disbursement_and_bound_checks() {
+        let env = Env::default();
+        env.mock_all_auths();
+        env.ledger().set_timestamp(1_000);
+
+        let contract_id = env.register(ProductionFinancingContract, ());
+        let client = ProductionFinancingContractClient::new(&env, &contract_id);
+
+        let applicant = Address::generate(&env);
+        let contributor = Address::generate(&env);
+        let admin = Address::generate(&env);
+        let (token_addr, token_admin) = create_test_token(&env, &admin);
+
+        token_admin.mint(&contributor, &100_000_000_000);
+
+        let proposal_id = String::from_str(&env, "prop-tranche-test");
+        let purpose = String::from_str(&env, "Tranche bound test");
+        let meta_uri = String::from_str(&env, "ipfs://tranche");
+
+        client.create_proposal(
+            &applicant,
+            &proposal_id,
+            &token_addr,
+            &100_000_000_000,
+            &50_000_000_000,
+            &2_000,
+            &110_000_000_000,
+            &purpose,
+            &meta_uri,
+        );
+
+        client.contribute_funds(&contributor, &proposal_id, &100_000_000_000);
+
+        // Disburse 40% (4,000 bps)
+        let t1 = client.disburse_tranche(&applicant, &proposal_id, &4_000);
+        assert_eq!(t1, 40_000_000_000);
+
+        // Disburse 60% (6,000 bps)
+        let t2 = client.disburse_tranche(&applicant, &proposal_id, &6_000);
+        assert_eq!(t2, 60_000_000_000);
+
+        // Further disbursement attempt must fail (cannot drain more than 100%)
+        let res = client.try_disburse_tranche(&applicant, &proposal_id, &100);
+        assert_eq!(res, Err(Ok(FinancingError::InvalidAmount)));
+
+        // release_funds attempt after full disbursement must also be rejected
+        let res_release = client.try_release_funds(&applicant, &proposal_id);
+        assert_eq!(res_release, Err(Ok(FinancingError::AlreadyReleased)));
+    }
+
+    #[test]
+    fn test_financing_pause_circuit_breaker() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let contract_id = env.register(ProductionFinancingContract, ());
+        let client = ProductionFinancingContractClient::new(&env, &contract_id);
+
+        let admin = Address::generate(&env);
+        let applicant = Address::generate(&env);
+        let (token_addr, _) = create_test_token(&env, &admin);
+
+        client.initialize_admin(&admin);
+        assert!(!client.is_paused());
+
+        client.set_paused(&admin, &true);
+        assert!(client.is_paused());
+
+        let proposal_id = String::from_str(&env, "prop-paused");
+        let purpose = String::from_str(&env, "Paused test");
+        let meta_uri = String::from_str(&env, "ipfs://paused");
+
+        let res = client.try_create_proposal(
+            &applicant,
+            &proposal_id,
+            &token_addr,
+            &100_000_000_000,
+            &50_000_000_000,
+            &2_000,
+            &110_000_000_000,
+            &purpose,
+            &meta_uri,
+        );
+        assert_eq!(res, Err(Ok(FinancingError::ContractPaused)));
     }
 }

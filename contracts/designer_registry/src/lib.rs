@@ -60,6 +60,21 @@ pub struct DesignerRegistryContract;
 
 #[contractimpl]
 impl DesignerRegistryContract {
+    /// Initialize the contract administrator
+    pub fn initialize_admin(env: Env, admin: Address) -> Result<(), RegistryError> {
+        if env.storage().instance().has(&KEY_ADMIN) {
+            return Err(RegistryError::AlreadyRegistered);
+        }
+        admin.require_auth();
+        env.storage().instance().set(&KEY_ADMIN, &admin);
+        Ok(())
+    }
+
+    /// Query the current contract administrator
+    pub fn get_admin(env: Env) -> Option<Address> {
+        env.storage().instance().get(&KEY_ADMIN)
+    }
+
     /// Register a new sovereign fashion designer or atelier
     pub fn register_designer(
         env: Env,
@@ -70,10 +85,10 @@ impl DesignerRegistryContract {
     ) -> Result<(), RegistryError> {
         designer.require_auth();
 
-        if brand_name.len() == 0 {
+        if brand_name.is_empty() {
             return Err(RegistryError::InvalidBrandName);
         }
-        if atelier_location.len() == 0 {
+        if atelier_location.is_empty() {
             return Err(RegistryError::InvalidLocation);
         }
 
@@ -124,10 +139,10 @@ impl DesignerRegistryContract {
     ) -> Result<(), RegistryError> {
         designer.require_auth();
 
-        if brand_name.len() == 0 {
+        if brand_name.is_empty() {
             return Err(RegistryError::InvalidBrandName);
         }
-        if atelier_location.len() == 0 {
+        if atelier_location.is_empty() {
             return Err(RegistryError::InvalidLocation);
         }
 
@@ -163,6 +178,13 @@ impl DesignerRegistryContract {
         designer: Address,
         new_tier: DesignerTier,
     ) -> Result<(), RegistryError> {
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&KEY_ADMIN)
+            .ok_or(RegistryError::Unauthorized)?;
+        admin.require_auth();
+
         let mut record: DesignerRecord = env
             .storage()
             .persistent()
@@ -187,6 +209,13 @@ impl DesignerRegistryContract {
         score: u32,
         cert_hash: String,
     ) -> Result<(), RegistryError> {
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&KEY_ADMIN)
+            .ok_or(RegistryError::Unauthorized)?;
+        admin.require_auth();
+
         if score > 100 {
             return Err(RegistryError::InvalidSustainabilityScore);
         }
@@ -216,6 +245,13 @@ impl DesignerRegistryContract {
 
     /// Set minimum verification stake bond for HauteCouture ateliers
     pub fn set_verification_bond(env: Env, bond_amount: i128) -> Result<(), RegistryError> {
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&KEY_ADMIN)
+            .ok_or(RegistryError::Unauthorized)?;
+        admin.require_auth();
+
         env.storage().instance().set(&KEY_BOND, &bond_amount);
         Ok(())
     }
@@ -227,6 +263,8 @@ impl DesignerRegistryContract {
 
     /// Increment fulfilled orders counter upon successful escrow release
     pub fn record_fulfillment(env: Env, designer: Address) -> Result<u32, RegistryError> {
+        designer.require_auth();
+
         let mut record: DesignerRecord = env
             .storage()
             .persistent()
@@ -256,7 +294,7 @@ impl DesignerRegistryContract {
             .storage()
             .instance()
             .get(&KEY_ADMIN)
-            .unwrap_or(current_admin.clone());
+            .ok_or(RegistryError::Unauthorized)?;
         if current_admin != admin {
             return Err(RegistryError::Unauthorized);
         }
@@ -410,6 +448,10 @@ mod tests {
         let contract_id = env.register(DesignerRegistryContract, ());
         let client = DesignerRegistryContractClient::new(&env, &contract_id);
 
+        let admin = Address::generate(&env);
+        client.initialize_admin(&admin);
+        assert_eq!(client.get_admin(), Some(admin.clone()));
+
         let designer = Address::generate(&env);
         let brand = String::from_str(&env, "EcoAtelier");
         let atelier = String::from_str(&env, "Berlin, Germany");
@@ -428,8 +470,27 @@ mod tests {
         let updated = client.get_designer(&designer);
         assert_eq!(updated.sustainability_score, 95);
 
+        // Bond setting
+        client.set_verification_bond(&500_000_000);
+        assert_eq!(client.get_verification_bond(), 500_000_000);
+
         // Fulfillment count
         let count = client.record_fulfillment(&designer);
         assert_eq!(count, 1);
+    }
+
+    #[test]
+    fn test_uninitialized_admin_propose_rejected() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let contract_id = env.register(DesignerRegistryContract, ());
+        let client = DesignerRegistryContractClient::new(&env, &contract_id);
+
+        let impostor = Address::generate(&env);
+        let target = Address::generate(&env);
+
+        let res = client.try_propose_admin(&impostor, &target);
+        assert_eq!(res, Err(Ok(RegistryError::Unauthorized)));
     }
 }

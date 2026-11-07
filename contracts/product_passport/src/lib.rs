@@ -1,4 +1,5 @@
 #![no_std]
+#![allow(clippy::too_many_arguments)]
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype, symbol_short, Address, Env, String, Symbol,
 };
@@ -64,13 +65,13 @@ impl ProductPassportContract {
     ) -> Result<(), PassportError> {
         creator.require_auth();
 
-        if product_id.len() == 0 {
+        if product_id.is_empty() {
             return Err(PassportError::InvalidProductId);
         }
-        if metadata_uri.len() == 0 {
+        if metadata_uri.is_empty() {
             return Err(PassportError::InvalidMetadata);
         }
-        if integrity_hash.len() == 0 {
+        if integrity_hash.is_empty() {
             return Err(PassportError::InvalidIntegrityHash);
         }
         if total_edition == 0 {
@@ -224,6 +225,14 @@ impl ProductPassportContract {
             .get(&product_id)
             .ok_or(PassportError::NotFound)?;
 
+        let cosign_key = (symbol_short!("cosign"), product_id.clone(), auditor.clone());
+        env.storage().persistent().set(&cosign_key, &audit_ref);
+        env.storage().persistent().extend_ttl(
+            &cosign_key,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
+
         env.storage().persistent().extend_ttl(
             &product_id,
             PERSISTENT_LIFETIME_THRESHOLD,
@@ -236,6 +245,12 @@ impl ProductPassportContract {
         );
 
         Ok(())
+    }
+
+    /// Read auditor verification reference if co-signed
+    pub fn get_audit_record(env: Env, product_id: String, auditor: Address) -> Option<String> {
+        let cosign_key = (symbol_short!("cosign"), product_id, auditor);
+        env.storage().persistent().get(&cosign_key)
     }
 
     /// Bounded batch passport creation helper (max 10 items per transaction)
@@ -296,6 +311,10 @@ impl ProductPassportContract {
 
         if record.owner != current_owner {
             return Err(PassportError::Unauthorized);
+        }
+
+        if record.status == 3 {
+            return Err(PassportError::PassportRetired);
         }
 
         record.owner = new_owner.clone();
@@ -507,5 +526,54 @@ mod tests {
 
         // Check royalty
         assert_eq!(client.get_royalty_bps(&product_id), 500);
+    }
+
+    #[test]
+    fn test_retired_passport_cannot_be_transferred() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let contract_id = env.register(ProductPassportContract, ());
+        let client = ProductPassportContractClient::new(&env, &contract_id);
+
+        let creator = Address::generate(&env);
+        let buyer = Address::generate(&env);
+        let product_id = String::from_str(&env, "ST-RETIRE-01");
+        let brand = String::from_str(&env, "EcoBrand");
+        let item = String::from_str(&env, "Upcycled Shirt");
+        let uri = String::from_str(&env, "ipfs://re");
+        let hash = String::from_str(&env, "hash-re");
+
+        client.create_passport(&creator, &product_id, &brand, &item, &uri, &hash, &1);
+        client.update_status(&product_id, &creator, &3); // Retired
+
+        let res = client.try_transfer_passport(&product_id, &creator, &buyer);
+        assert_eq!(res, Err(Ok(PassportError::PassportRetired)));
+    }
+
+    #[test]
+    fn test_co_sign_passport_persistence() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let contract_id = env.register(ProductPassportContract, ());
+        let client = ProductPassportContractClient::new(&env, &contract_id);
+
+        let creator = Address::generate(&env);
+        let auditor = Address::generate(&env);
+        let product_id = String::from_str(&env, "ST-AUDIT-01");
+        let brand = String::from_str(&env, "HauteAudit");
+        let item = String::from_str(&env, "Silk Scarf");
+        let uri = String::from_str(&env, "ipfs://audit");
+        let hash = String::from_str(&env, "hash-aud");
+        let audit_ref = String::from_str(&env, "AUDIT-CERT-ISO-14001");
+
+        client.create_passport(&creator, &product_id, &brand, &item, &uri, &hash, &1);
+        client.co_sign_passport(&product_id, &auditor, &audit_ref);
+
+        assert_eq!(
+            client.get_audit_record(&product_id, &auditor),
+            Some(audit_ref)
+        );
     }
 }

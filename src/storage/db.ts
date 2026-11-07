@@ -42,7 +42,7 @@ export interface StoredEscrowOrder {
 export interface StoredContractEvent {
   id: string;
   contractId: string;
-  contractName: 'designer_registry' | 'product_passport' | 'fashion_escrow';
+  contractName: 'designer_registry' | 'product_passport' | 'fashion_escrow' | 'production_financing';
   eventType: string;
   ledger: number;
   ledgerClosedAt: string;
@@ -109,7 +109,9 @@ export class ProtocolDatabase {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      fs.writeFileSync(this.filePath, JSON.stringify(this.data, null, 2), 'utf8');
+      const tmpPath = `${this.filePath}.${Date.now()}.${Math.random().toString(36).substring(2, 8)}.tmp`;
+      fs.writeFileSync(tmpPath, JSON.stringify(this.data, null, 2), 'utf8');
+      fs.renameSync(tmpPath, this.filePath);
     } catch (err) {
       console.error('Failed to write database file:', err);
     }

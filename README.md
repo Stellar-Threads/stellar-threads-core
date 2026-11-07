@@ -7,7 +7,9 @@
 <div align="center">
 
 [![Protocol 22](https://img.shields.io/badge/Stellar-Protocol%2022-gold?style=flat-square&logo=stellar)](https://stellar.org)
-[![Contracts 100% Passing](https://img.shields.io/badge/Soroban%20Tests-29%2F29%20Passing-emerald?style=flat-square)](contracts/)
+[![Core CI](https://github.com/Stellar-Threads/stellar-threads-core/actions/workflows/ci.yml/badge.svg)](https://github.com/Stellar-Threads/stellar-threads-core/actions)
+[![CodeQL](https://github.com/Stellar-Threads/stellar-threads-core/actions/workflows/codeql.yml/badge.svg)](https://github.com/Stellar-Threads/stellar-threads-core/actions)
+[![Contracts 100% Passing](https://img.shields.io/badge/Soroban%20Tests-36%2F36%20Passing-emerald?style=flat-square)](contracts/)
 [![Backend Tests 100% Passing](https://img.shields.io/badge/Vitest%20Suites-68%2F68%20Passing-emerald?style=flat-square)](src/tests/)
 [![Solvency](https://img.shields.io/badge/Proof--of--Reserve-100%25%20Solvent-blue?style=flat-square)](docs/SOLVENCY.md)
 [![Live dApp](https://img.shields.io/badge/Frontend-stellar--threads--app.netlify.app-00c7b7?style=flat-square&logo=netlify)](https://stellar-threads-app.netlify.app)
@@ -41,10 +43,19 @@ The core protocol comprises 4 specialized smart contracts written in Rust:
 
 | Contract | Purpose | Key Innovations | Tests |
 |---|---|---|:---:|
-| **`fashion_escrow`** | 4-Stage B2B trade escrow | Zero-deficit 10,000 bps split, dust preservation, emergency pause, inspection attestation | 10 Pass |
-| **`product_passport`** | Digital Product Passport (DPP) | Cryptographic SHA-256 physical twin check, soulbound provenance history, circular economy | 6 Pass |
-| **`production_financing`** | Invoice factoring liquidity | Senior collateral claim, factoring APY yield engine, pro-rata investor refund waterfall | 7 Pass |
-| **`designer_registry`** | Atelier credentials & ESG | Luxury prestige tiers (`HauteCouture`), GOTS bio-textile certifications, auto-rent bumps | 6 Pass |
+| **`fashion_escrow`** | 4-Stage B2B trade escrow | Zero-deficit 10,000 bps split, dust preservation, emergency pause, arbitrator dispute resolution | 12 Pass |
+| **`product_passport`** | Digital Product Passport (DPP) | Cryptographic SHA-256 physical twin check, soulbound provenance history, lifecycle status enforcement, co-signatures | 8 Pass |
+| **`production_financing`** | Invoice factoring liquidity | Senior collateral claim, factoring APY yield engine, pro-rata investor refund waterfall, cumulative tranche caps | 9 Pass |
+| **`designer_registry`** | Atelier credentials & ESG | Luxury prestige tiers (`HauteCouture`), GOTS bio-textile certifications, 2-step authenticated admin proposal | 7 Pass |
+
+### 🌐 Verified Testnet Contract Deployments
+
+| Contract | Soroban Contract ID | Explorer Link |
+|---|---|:---:|
+| `DesignerRegistry` | `CDUF5C2CNF3NFMMUOGCO74D2NFKCYUK6VVILPGXM5RDC7CDCGD3GJEHR` | [StellarExpert](https://stellar.expert/explorer/testnet/contract/CDUF5C2CNF3NFMMUOGCO74D2NFKCYUK6VVILPGXM5RDC7CDCGD3GJEHR) |
+| `ProductPassport` | `CD23NAGPWADWWFRGMDUM4GUFGIB52U73L3F5QURQSACWOHXLEKKE3ZVL` | [StellarExpert](https://stellar.expert/explorer/testnet/contract/CD23NAGPWADWWFRGMDUM4GUFGIB52U73L3F5QURQSACWOHXLEKKE3ZVL) |
+| `FashionEscrow` | `CBULSNLLBDACPNNNM4JB5NL2XB56QP6FVU7HHIOTNUXKUBSU4JHJGV5D` | [StellarExpert](https://stellar.expert/explorer/testnet/contract/CBULSNLLBDACPNNNM4JB5NL2XB56QP6FVU7HHIOTNUXKUBSU4JHJGV5D) |
+| `ProductionFinancing` | `CAIK2L6D272O6RZA23LRL3QSHLDVXNZXD6BKXCYNEL6R35IEG3YXES3M` | [StellarExpert](https://stellar.expert/explorer/testnet/contract/CAIK2L6D272O6RZA23LRL3QSHLDVXNZXD6BKXCYNEL6R35IEG3YXES3M) |
 
 ---
 
@@ -83,7 +94,7 @@ The core protocol comprises 4 specialized smart contracts written in Rust:
 # 1. Install dependencies
 npm install
 
-# 2. Run Rust Soroban smart contract tests (29 passing)
+# 2. Run Rust Soroban smart contract tests (36 passing)
 cargo test --manifest-path contracts/Cargo.toml
 
 # 3. Check contract WASM compilation

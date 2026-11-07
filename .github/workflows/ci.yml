@@ -53,6 +53,9 @@ jobs:
       - name: Cargo Format Check
         run: cargo fmt --all --check --manifest-path contracts/Cargo.toml
 
+      - name: Cargo Clippy Check
+        run: cargo clippy --all-targets --manifest-path contracts/Cargo.toml -- -D warnings
+
       - name: Cargo Check
         run: cargo check --manifest-path contracts/Cargo.toml --locked
 

@@ -230,6 +230,11 @@ impl FashionEscrowContract {
         order.settled_at = now;
 
         env.storage().persistent().set(&order_id, &order);
+        env.storage().persistent().extend_ttl(
+            &order_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         // Emit release event
         env.events().publish(
@@ -266,6 +271,11 @@ impl FashionEscrowContract {
         order.settled_at = now;
 
         env.storage().persistent().set(&order_id, &order);
+        env.storage().persistent().extend_ttl(
+            &order_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         // Emit refund event
         env.events().publish(
@@ -297,6 +307,11 @@ impl FashionEscrowContract {
         order.settled_at = env.ledger().timestamp();
 
         env.storage().persistent().set(&order_id, &order);
+        env.storage().persistent().extend_ttl(
+            &order_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         // Emit cancellation event
         env.events()

@@ -357,6 +357,11 @@ impl ProductPassportContract {
 
         record.status = new_status;
         env.storage().persistent().set(&product_id, &record);
+        env.storage().persistent().extend_ttl(
+            &product_id,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         // Emit status update event
         env.events().publish(

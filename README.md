@@ -81,7 +81,11 @@ The core protocol comprises 4 specialized smart contracts written in Rust:
 ## ⚡ Technical Highlights
 
 - **Mathematical Invariant**: 100% integer arithmetic using `1 XLM = 10,000,000 Stroops` and `10,000 basis points (BPS)`. Dust floor attribution prevents any protocol fund leaks.
-- **Protocol 22 Rent Auto-Bumping**: Proactive TTL rent extension (`bump_instance` & `bump_persistent` for 518,400 ledgers / ~30 days) guarantees contracts and state entries are never evicted.
+- **Stablecoin Trade Settlement (USDC & EURC)**: Native Stellar Asset Contract (SAC) multi-currency architecture supporting EURC and USDC, insulating independent ateliers from crypto volatility during 60-90 day B2B production cycles.
+- **European Fiat On/Off-Ramps (SEP-24 / SEP-6)**: Architected for direct integration with European Stellar anchors, allowing luxury ateliers to off-ramp directly to SEPA / IBAN commercial bank accounts.
+- **Cryptographic Physical Twin Verification**: Combines secure-element NFC tag challenge-response signatures (NTAG 424 DNA SUN) with on-chain SHA-256 integrity digests for EU Digital Product Passport (DPP / ESPR) compliance.
+- **RWA Factoring Legal Perfection**: Real-world asset receivables model pairing senior purchase-order collateral with on-chain pull-payment repayment waterfalls (`claim_repayment_share`).
+- **Protocol 22 Rent Auto-Bumping**: Proactive TTL rent extension (`bump_instance` & `bump_persistent` for 3,110,400 ledgers / ~6 months) across all mutations guarantees contracts and state entries are never evicted.
 - **High-Throughput Channel Manager**: Ephemeral transaction source keypair pooling eliminates `txBAD_SEQ` sequence number conflicts during concurrent order disbursements.
 - **Resilient RPC Failover Pool**: Multi-endpoint `RpcCircuitBreaker` automatically rotates across healthy Stellar RPC nodes with exponential backoff.
 - **Proof-of-Reserve Solvency Auditor**: Autonomous service matching on-chain escrow balances with off-chain order commitments, exposing real-time reserve ratios.

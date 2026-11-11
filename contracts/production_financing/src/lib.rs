@@ -278,6 +278,11 @@ impl ProductionFinancingContract {
             .set(&d_key, &proposal.current_funded);
         proposal.status = ProposalStatus::ProductionActive;
         env.storage().persistent().set(&p_key, &proposal);
+        env.storage().persistent().extend_ttl(
+            &p_key,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_FINANCING, EVT_RELEASED),
@@ -324,6 +329,11 @@ impl ProductionFinancingContract {
         }
 
         env.storage().persistent().set(&p_key, &proposal);
+        env.storage().persistent().extend_ttl(
+            &p_key,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_FINANCING, EVT_REPAID),
@@ -379,6 +389,11 @@ impl ProductionFinancingContract {
         env.storage()
             .persistent()
             .set(&cl_key, &(already_claimed + claimable));
+        env.storage().persistent().extend_ttl(
+            &cl_key,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_FINANCING, EVT_CLAIMED),
@@ -432,6 +447,11 @@ impl ProductionFinancingContract {
 
         proposal.status = ProposalStatus::ExpiredRefund;
         env.storage().persistent().set(&p_key, &proposal);
+        env.storage().persistent().extend_ttl(
+            &p_key,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_FINANCING, EVT_REFUNDED),
@@ -501,6 +521,11 @@ impl ProductionFinancingContract {
         env.storage().persistent().remove(&c_key);
         proposal.status = ProposalStatus::ExpiredRefund;
         env.storage().persistent().set(&p_key, &proposal);
+        env.storage().persistent().extend_ttl(
+            &p_key,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_FINANCING, EVT_REFUNDED),

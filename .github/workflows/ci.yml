@@ -34,7 +34,7 @@ jobs:
         run: npm run build
 
       - name: Dependency Vulnerability Audit
-        run: npm audit --audit-level=critical || true
+        run: npm audit --audit-level=high
 
   contract-checks:
     name: Soroban Rust Contracts

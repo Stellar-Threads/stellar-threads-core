@@ -193,6 +193,11 @@ impl DesignerRegistryContract {
 
         record.tier = new_tier;
         env.storage().persistent().set(&designer, &record);
+        env.storage().persistent().extend_ttl(
+            &designer,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_DESIGNER, symbol_short!("tier")),
@@ -229,6 +234,11 @@ impl DesignerRegistryContract {
         record.sustainability_score = score;
         record.cert_hash = cert_hash.clone();
         env.storage().persistent().set(&designer, &record);
+        env.storage().persistent().extend_ttl(
+            &designer,
+            PERSISTENT_LIFETIME_THRESHOLD,
+            PERSISTENT_BUMP_AMOUNT,
+        );
 
         env.events().publish(
             (TOPIC_DESIGNER, symbol_short!("esg")),
